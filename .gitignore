@@ -1,0 +1,16 @@
+# Compilados
+*.exe
+*.o
+*.out
+
+# Archivos de datos generados
+USUARIOS.TXT
+PERFILES.TXT
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
