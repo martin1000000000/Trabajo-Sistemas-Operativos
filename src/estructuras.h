@@ -10,7 +10,7 @@ struct Usuario {
     string nombre;
     string username;
     string password;
-    string perfil;  // "ADMIN" o "GENERAL"
+    string perfil;  // Perfil asignado (ej: "ADMIN", "GENERAL", etc.)
 };
 
 // ─── Lista de Usuarios (en memoria) ──────────────────────

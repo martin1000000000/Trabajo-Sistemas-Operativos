@@ -5,13 +5,13 @@
 #include <string>
 
 // Muestra el menú de gestión de usuarios y maneja las opciones
-void menuUsuarios(ListaUsuarios& listaUsuarios, const string& archivoUsuarios);
+void menuUsuarios(ListaUsuarios& listaUsuarios, const string& archivoUsuarios, const ListaPerfiles& listaPerfiles);
 
 // Ingresa un nuevo usuario (pide datos y lo agrega a memoria + archivo)
-void ingresarUsuario(ListaUsuarios& listaUsuarios, const string& archivoUsuarios);
+void ingresarUsuario(ListaUsuarios& listaUsuarios, const string& archivoUsuarios, const ListaPerfiles& listaPerfiles);
 
-// Lista todos los usuarios desde memoria
-void listarUsuarios(const ListaUsuarios& listaUsuarios);
+// Lista todos los usuarios desde memoria (o desde archivo si no hay datos cargados)
+void listarUsuarios(ListaUsuarios& listaUsuarios, const string& archivoUsuarios);
 
 // Elimina un usuario por ID (con alerta si es ADMIN)
 void eliminarUsuario(ListaUsuarios& listaUsuarios, const string& archivoUsuarios);

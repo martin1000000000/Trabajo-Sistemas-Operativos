@@ -116,19 +116,41 @@ void ingresarPerfil(ListaPerfiles& listaPerfiles, const string& archivoPerfiles)
         return;
     }
 
-    // Agregar a memoria
-    listaPerfiles.perfiles[listaPerfiles.cantidad] = nuevoPerfil;
-    listaPerfiles.cantidad++;
+    cout << endl << "  1) guardar   2) cancelar" << endl;
+    int opcionGuardar = leerEntero("Opcion : ");
 
-    // Guardar en archivo
-    guardarPerfilesEnArchivo(listaPerfiles, archivoPerfiles);
+    if (opcionGuardar == 1) {
+        // Agregar a memoria
+        listaPerfiles.perfiles[listaPerfiles.cantidad] = nuevoPerfil;
+        listaPerfiles.cantidad++;
 
-    cout << endl << "[OK] Perfil '" << nuevoPerfil.nombre << "' ingresado correctamente." << endl;
+        // Guardar en archivo (anexar al final)
+        ofstream archivo(archivoPerfiles, ios::app);
+        if (archivo.is_open()) {
+            archivo << nuevoPerfil.nombre << ";";
+            for (int j = 0; j < nuevoPerfil.numOpciones; j++) {
+                archivo << nuevoPerfil.opciones[j];
+                if (j < nuevoPerfil.numOpciones - 1) archivo << ",";
+            }
+            archivo << endl;
+            archivo.close();
+            cout << endl << "[OK] Perfil '" << nuevoPerfil.nombre << "' ingresado correctamente." << endl;
+        } else {
+            cout << "[ERROR] No se pudo abrir el archivo para escritura." << endl;
+        }
+    } else {
+        cout << "Operacion cancelada." << endl;
+    }
     pausar();
 }
 
 // ─── Listar todos los perfiles desde memoria ─────────────
-void listarPerfiles(const ListaPerfiles& listaPerfiles) {
+void listarPerfiles(ListaPerfiles& listaPerfiles, const string& archivoPerfiles) {
+    // Si no hay datos en memoria, intentar cargar desde archivo
+    if (listaPerfiles.cantidad == 0) {
+        cargarPerfilesDesdeArchivo(listaPerfiles, archivoPerfiles);
+    }
+
     cout << endl << "=== Lista de Perfiles ===" << endl;
 
     if (listaPerfiles.cantidad == 0) {
@@ -196,11 +218,10 @@ void eliminarPerfil(ListaPerfiles& listaPerfiles, const string& archivoPerfiles)
     cout << endl;
 
     // Confirmar eliminación
-    string confirmacion;
-    cout << "¿Desea eliminar este perfil? (S/N): ";
-    getline(cin, confirmacion);
+    cout << endl << "  1) guardar   2) cancelar" << endl;
+    int opcionGuardar = leerEntero("Opcion : ");
 
-    if (confirmacion == "S" || confirmacion == "s") {
+    if (opcionGuardar == 1) {
         // Desplazar elementos
         for (int i = indice; i < listaPerfiles.cantidad - 1; i++) {
             listaPerfiles.perfiles[i] = listaPerfiles.perfiles[i + 1];
@@ -240,7 +261,7 @@ void menuPerfiles(ListaPerfiles& listaPerfiles, const string& archivoPerfiles) {
                 ingresarPerfil(listaPerfiles, archivoPerfiles);
                 break;
             case 2:
-                listarPerfiles(listaPerfiles);
+                listarPerfiles(listaPerfiles, archivoPerfiles);
                 break;
             case 3:
                 eliminarPerfil(listaPerfiles, archivoPerfiles);

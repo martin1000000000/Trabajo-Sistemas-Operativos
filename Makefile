@@ -16,6 +16,6 @@ run: $(TARGET)
 
 # Limpiar ejecutable
 clean:
-	del /Q $(TARGET).exe 2>nul || rm -f $(TARGET)
+	rm -f $(TARGET) $(TARGET).exe
 
 .PHONY: all run clean

@@ -66,7 +66,7 @@ void guardarUsuariosEnArchivo(const ListaUsuarios& listaUsuarios, const string& 
 }
 
 // ─── Ingresar un nuevo usuario ────────────────────────────
-void ingresarUsuario(ListaUsuarios& listaUsuarios, const string& archivoUsuarios) {
+void ingresarUsuario(ListaUsuarios& listaUsuarios, const string& archivoUsuarios, const ListaPerfiles& listaPerfiles) {
     if (listaUsuarios.cantidad >= 100) {
         cout << "[ERROR] Se alcanzo el limite maximo de usuarios (100)." << endl;
         pausar();
@@ -97,29 +97,39 @@ void ingresarUsuario(ListaUsuarios& listaUsuarios, const string& archivoUsuarios
     cout << "Password: ";
     getline(cin, nuevoUsuario.password);
 
-    // Solicitar perfil con validación
-    while (true) {
-        cout << "Perfil (ADMIN/GENERAL): ";
-        getline(cin, nuevoUsuario.perfil);
-        if (nuevoUsuario.perfil == "ADMIN" || nuevoUsuario.perfil == "GENERAL") {
-            break;
+    cout << "Perfil: ";
+    getline(cin, nuevoUsuario.perfil);
+
+    cout << endl << "  1) guardar   2) cancelar" << endl;
+    int opcionGuardar = leerEntero("Opcion : ");
+
+    if (opcionGuardar == 1) {
+        // Agregar a memoria
+        listaUsuarios.usuarios[listaUsuarios.cantidad] = nuevoUsuario;
+        listaUsuarios.cantidad++;
+
+        // Guardar en archivo (anexar al final)
+        ofstream archivo(archivoUsuarios, ios::app);
+        if (archivo.is_open()) {
+            archivo << nuevoUsuario.id << ";" << nuevoUsuario.nombre << ";" << nuevoUsuario.username << ";" << nuevoUsuario.password << ";" << nuevoUsuario.perfil << endl;
+            archivo.close();
+            cout << endl << "[OK] Usuario '" << nuevoUsuario.nombre << "' ingresado correctamente." << endl;
+        } else {
+            cout << "[ERROR] No se pudo abrir el archivo para escritura." << endl;
         }
-        cout << "[ERROR] Perfil debe ser ADMIN o GENERAL." << endl;
+    } else {
+        cout << "Operacion cancelada." << endl;
     }
-
-    // Agregar a memoria
-    listaUsuarios.usuarios[listaUsuarios.cantidad] = nuevoUsuario;
-    listaUsuarios.cantidad++;
-
-    // Guardar en archivo (reescribir todo)
-    guardarUsuariosEnArchivo(listaUsuarios, archivoUsuarios);
-
-    cout << endl << "[OK] Usuario '" << nuevoUsuario.nombre << "' ingresado correctamente." << endl;
     pausar();
 }
 
 // ─── Listar todos los usuarios desde memoria ─────────────
-void listarUsuarios(const ListaUsuarios& listaUsuarios) {
+void listarUsuarios(ListaUsuarios& listaUsuarios, const string& archivoUsuarios) {
+    // Si no hay datos en memoria, intentar cargar desde archivo
+    if (listaUsuarios.cantidad == 0) {
+        cargarUsuariosDesdeArchivo(listaUsuarios, archivoUsuarios);
+    }
+
     cout << endl << "=== Lista de Usuarios ===" << endl;
 
     if (listaUsuarios.cantidad == 0) {
@@ -183,11 +193,10 @@ void eliminarUsuario(ListaUsuarios& listaUsuarios, const string& archivoUsuarios
     }
 
     // Confirmar eliminación
-    string confirmacion;
-    cout << "¿Desea eliminar este usuario? (S/N): ";
-    getline(cin, confirmacion);
+    cout << endl << "  1) guardar   2) cancelar" << endl;
+    int opcionGuardar = leerEntero("Opcion : ");
 
-    if (confirmacion == "S" || confirmacion == "s") {
+    if (opcionGuardar == 1) {
         // Desplazar elementos para llenar el hueco
         for (int i = indice; i < listaUsuarios.cantidad - 1; i++) {
             listaUsuarios.usuarios[i] = listaUsuarios.usuarios[i + 1];
@@ -206,7 +215,7 @@ void eliminarUsuario(ListaUsuarios& listaUsuarios, const string& archivoUsuarios
 }
 
 // ─── Menú de Gestión de Usuarios ──────────────────────────
-void menuUsuarios(ListaUsuarios& listaUsuarios, const string& archivoUsuarios) {
+void menuUsuarios(ListaUsuarios& listaUsuarios, const string& archivoUsuarios, const ListaPerfiles& listaPerfiles) {
     int opcion;
 
     do {
@@ -224,10 +233,10 @@ void menuUsuarios(ListaUsuarios& listaUsuarios, const string& archivoUsuarios) {
 
         switch (opcion) {
             case 1:
-                ingresarUsuario(listaUsuarios, archivoUsuarios);
+                ingresarUsuario(listaUsuarios, archivoUsuarios, listaPerfiles);
                 break;
             case 2:
-                listarUsuarios(listaUsuarios);
+                listarUsuarios(listaUsuarios, archivoUsuarios);
                 break;
             case 3:
                 eliminarUsuario(listaUsuarios, archivoUsuarios);

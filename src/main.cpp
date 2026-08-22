@@ -45,7 +45,7 @@ int main() {
 
         switch (opcion) {
             case 1:
-                menuUsuarios(listaUsuarios, archivoUsuarios);
+                menuUsuarios(listaUsuarios, archivoUsuarios, listaPerfiles);
                 break;
             case 2:
                 menuPerfiles(listaPerfiles, archivoPerfiles);
