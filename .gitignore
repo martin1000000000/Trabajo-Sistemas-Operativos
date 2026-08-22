@@ -2,6 +2,9 @@
 *.exe
 *.o
 *.out
+SistOpe
+nul
+pdf_texto.txt
 
 # Archivos de datos generados
 USUARIOS.TXT

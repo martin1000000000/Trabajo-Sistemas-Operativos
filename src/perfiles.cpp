@@ -78,12 +78,13 @@ void guardarPerfilesEnArchivo(const ListaPerfiles& listaPerfiles, const string& 
 
 // ─── Ingresar un nuevo perfil ─────────────────────────────
 void ingresarPerfil(ListaPerfiles& listaPerfiles, const string& archivoPerfiles) {
+    // Límite predefinido por diseño del arreglo en memoria,
     if (listaPerfiles.cantidad >= 10) {
         cout << "[ERROR] Se alcanzo el limite maximo de perfiles (10)." << endl;
         pausar();
         return;
     }
-
+    
     Perfil nuevoPerfil;
     nuevoPerfil.numOpciones = 0;
 
@@ -101,11 +102,11 @@ void ingresarPerfil(ListaPerfiles& listaPerfiles, const string& archivoPerfiles)
         }
     }
 
-    // Pedir opciones (una por una hasta que ingrese -1)
-    cout << "Ingrese las opciones del perfil (numeros enteros, -1 para terminar):" << endl;
+    // Pedir opciones (una por una hasta que ingrese 0)
+    cout << "Ingrese las opciones del perfil (numeros enteros, 0 para terminar):" << endl;
     while (nuevoPerfil.numOpciones < 10) {
-        int opcion = leerEntero("  Opcion " + to_string(nuevoPerfil.numOpciones + 1) + " (-1 para terminar): ");
-        if (opcion == -1) break;
+        int opcion = leerEntero("  Opcion " + to_string(nuevoPerfil.numOpciones + 1) + " (0 para terminar): ");
+        if (opcion == 0) break;
         nuevoPerfil.opciones[nuevoPerfil.numOpciones] = opcion;
         nuevoPerfil.numOpciones++;
     }
@@ -116,19 +117,41 @@ void ingresarPerfil(ListaPerfiles& listaPerfiles, const string& archivoPerfiles)
         return;
     }
 
-    // Agregar a memoria
-    listaPerfiles.perfiles[listaPerfiles.cantidad] = nuevoPerfil;
-    listaPerfiles.cantidad++;
+    cout << endl << "  1) guardar   2) cancelar" << endl;
+    int opcionGuardar = leerEntero("Opcion : ");
 
-    // Guardar en archivo
-    guardarPerfilesEnArchivo(listaPerfiles, archivoPerfiles);
+    if (opcionGuardar == 1) {
+        // Agregar a memoria
+        listaPerfiles.perfiles[listaPerfiles.cantidad] = nuevoPerfil;
+        listaPerfiles.cantidad++;
 
-    cout << endl << "[OK] Perfil '" << nuevoPerfil.nombre << "' ingresado correctamente." << endl;
+        // Guardar en archivo (anexar al final)
+        ofstream archivo(archivoPerfiles, ios::app);
+        if (archivo.is_open()) {
+            archivo << nuevoPerfil.nombre << ";";
+            for (int j = 0; j < nuevoPerfil.numOpciones; j++) {
+                archivo << nuevoPerfil.opciones[j];
+                if (j < nuevoPerfil.numOpciones - 1) archivo << ",";
+            }
+            archivo << endl;
+            archivo.close();
+            cout << endl << "[OK] Perfil '" << nuevoPerfil.nombre << "' ingresado correctamente." << endl;
+        } else {
+            cout << "[ERROR] No se pudo abrir el archivo para escritura." << endl;
+        }
+    } else {
+        cout << "Operacion cancelada." << endl;
+    }
     pausar();
 }
 
 // ─── Listar todos los perfiles desde memoria ─────────────
-void listarPerfiles(const ListaPerfiles& listaPerfiles) {
+void listarPerfiles(ListaPerfiles& listaPerfiles, const string& archivoPerfiles) {
+    // Si no hay datos en memoria, intentar cargar desde archivo
+    if (listaPerfiles.cantidad == 0) {
+        cargarPerfilesDesdeArchivo(listaPerfiles, archivoPerfiles);
+    }
+
     cout << endl << "=== Lista de Perfiles ===" << endl;
 
     if (listaPerfiles.cantidad == 0) {
@@ -196,11 +219,10 @@ void eliminarPerfil(ListaPerfiles& listaPerfiles, const string& archivoPerfiles)
     cout << endl;
 
     // Confirmar eliminación
-    string confirmacion;
-    cout << "¿Desea eliminar este perfil? (S/N): ";
-    getline(cin, confirmacion);
+    cout << endl << "  1) guardar   2) cancelar" << endl;
+    int opcionGuardar = leerEntero("Opcion : ");
 
-    if (confirmacion == "S" || confirmacion == "s") {
+    if (opcionGuardar == 1) {
         // Desplazar elementos
         for (int i = indice; i < listaPerfiles.cantidad - 1; i++) {
             listaPerfiles.perfiles[i] = listaPerfiles.perfiles[i + 1];
@@ -240,7 +262,7 @@ void menuPerfiles(ListaPerfiles& listaPerfiles, const string& archivoPerfiles) {
                 ingresarPerfil(listaPerfiles, archivoPerfiles);
                 break;
             case 2:
-                listarPerfiles(listaPerfiles);
+                listarPerfiles(listaPerfiles, archivoPerfiles);
                 break;
             case 3:
                 eliminarPerfil(listaPerfiles, archivoPerfiles);

@@ -3,6 +3,9 @@
 #include <iostream>
 #include <fstream>
 #include <sstream>
+#include <algorithm>
+#include <cctype>
+#include <iomanip>
 
 using namespace std;
 
@@ -66,7 +69,7 @@ void guardarUsuariosEnArchivo(const ListaUsuarios& listaUsuarios, const string& 
 }
 
 // ─── Ingresar un nuevo usuario ────────────────────────────
-void ingresarUsuario(ListaUsuarios& listaUsuarios, const string& archivoUsuarios) {
+void ingresarUsuario(ListaUsuarios& listaUsuarios, const string& archivoUsuarios, const ListaPerfiles& listaPerfiles) {
     if (listaUsuarios.cantidad >= 100) {
         cout << "[ERROR] Se alcanzo el limite maximo de usuarios (100)." << endl;
         pausar();
@@ -97,29 +100,54 @@ void ingresarUsuario(ListaUsuarios& listaUsuarios, const string& archivoUsuarios
     cout << "Password: ";
     getline(cin, nuevoUsuario.password);
 
-    // Solicitar perfil con validación
-    while (true) {
+    bool perfilValido = false;
+    do {
         cout << "Perfil (ADMIN/GENERAL): ";
         getline(cin, nuevoUsuario.perfil);
+
+        // Quitar espacios
+        nuevoUsuario.perfil.erase(remove_if(nuevoUsuario.perfil.begin(), nuevoUsuario.perfil.end(), ::isspace), nuevoUsuario.perfil.end());
+
+        // Convertir a mayúsculas
+        transform(nuevoUsuario.perfil.begin(), nuevoUsuario.perfil.end(), nuevoUsuario.perfil.begin(), ::toupper);
+
         if (nuevoUsuario.perfil == "ADMIN" || nuevoUsuario.perfil == "GENERAL") {
-            break;
+            perfilValido = true;
+        } else {
+            cout << "[ERROR] Perfil invalido. Solo se permite ADMIN o GENERAL." << endl;
         }
-        cout << "[ERROR] Perfil debe ser ADMIN o GENERAL." << endl;
+    } while (!perfilValido);
+
+    cout << endl << "  1) guardar   2) cancelar" << endl;
+    int opcionGuardar = leerEntero("Opcion : ");
+
+    if (opcionGuardar == 1) {
+        // Agregar a memoria
+        listaUsuarios.usuarios[listaUsuarios.cantidad] = nuevoUsuario;
+        listaUsuarios.cantidad++;
+
+        // Guardar en archivo (anexar al final)
+        ofstream archivo(archivoUsuarios, ios::app);
+        if (archivo.is_open()) {
+            archivo << nuevoUsuario.id << ";" << nuevoUsuario.nombre << ";" << nuevoUsuario.username << ";" << nuevoUsuario.password << ";" << nuevoUsuario.perfil << endl;
+            archivo.close();
+            cout << endl << "[OK] Usuario '" << nuevoUsuario.nombre << "' ingresado correctamente." << endl;
+        } else {
+            cout << "[ERROR] No se pudo abrir el archivo para escritura." << endl;
+        }
+    } else {
+        cout << "Operacion cancelada." << endl;
     }
-
-    // Agregar a memoria
-    listaUsuarios.usuarios[listaUsuarios.cantidad] = nuevoUsuario;
-    listaUsuarios.cantidad++;
-
-    // Guardar en archivo (reescribir todo)
-    guardarUsuariosEnArchivo(listaUsuarios, archivoUsuarios);
-
-    cout << endl << "[OK] Usuario '" << nuevoUsuario.nombre << "' ingresado correctamente." << endl;
     pausar();
 }
 
 // ─── Listar todos los usuarios desde memoria ─────────────
-void listarUsuarios(const ListaUsuarios& listaUsuarios) {
+void listarUsuarios(ListaUsuarios& listaUsuarios, const string& archivoUsuarios) {
+    // Si no hay datos en memoria, intentar cargar desde archivo
+    if (listaUsuarios.cantidad == 0) {
+        cargarUsuariosDesdeArchivo(listaUsuarios, archivoUsuarios);
+    }
+
     cout << endl << "=== Lista de Usuarios ===" << endl;
 
     if (listaUsuarios.cantidad == 0) {
@@ -129,12 +157,18 @@ void listarUsuarios(const ListaUsuarios& listaUsuarios) {
     }
 
     cout << "---------------------------------------------------------------" << endl;
-    cout << "ID\tNombre\t\t\tUsername\tPerfil" << endl;
+    cout << left << setw(5) << "ID" 
+         << setw(25) << "Nombre" 
+         << setw(15) << "Username" 
+         << "Perfil" << endl;
     cout << "---------------------------------------------------------------" << endl;
 
     for (int i = 0; i < listaUsuarios.cantidad; i++) {
         const Usuario& u = listaUsuarios.usuarios[i];
-        cout << u.id << "\t" << u.nombre << "\t\t" << u.username << "\t\t" << u.perfil << endl;
+        cout << left << setw(5) << u.id 
+             << setw(25) << u.nombre 
+             << setw(15) << u.username 
+             << u.perfil << endl;
     }
 
     cout << "---------------------------------------------------------------" << endl;
@@ -183,11 +217,10 @@ void eliminarUsuario(ListaUsuarios& listaUsuarios, const string& archivoUsuarios
     }
 
     // Confirmar eliminación
-    string confirmacion;
-    cout << "¿Desea eliminar este usuario? (S/N): ";
-    getline(cin, confirmacion);
+    cout << endl << "  1) guardar   2) cancelar" << endl;
+    int opcionGuardar = leerEntero("Opcion : ");
 
-    if (confirmacion == "S" || confirmacion == "s") {
+    if (opcionGuardar == 1) {
         // Desplazar elementos para llenar el hueco
         for (int i = indice; i < listaUsuarios.cantidad - 1; i++) {
             listaUsuarios.usuarios[i] = listaUsuarios.usuarios[i + 1];
@@ -206,7 +239,7 @@ void eliminarUsuario(ListaUsuarios& listaUsuarios, const string& archivoUsuarios
 }
 
 // ─── Menú de Gestión de Usuarios ──────────────────────────
-void menuUsuarios(ListaUsuarios& listaUsuarios, const string& archivoUsuarios) {
+void menuUsuarios(ListaUsuarios& listaUsuarios, const string& archivoUsuarios, const ListaPerfiles& listaPerfiles) {
     int opcion;
 
     do {
@@ -224,10 +257,10 @@ void menuUsuarios(ListaUsuarios& listaUsuarios, const string& archivoUsuarios) {
 
         switch (opcion) {
             case 1:
-                ingresarUsuario(listaUsuarios, archivoUsuarios);
+                ingresarUsuario(listaUsuarios, archivoUsuarios, listaPerfiles);
                 break;
             case 2:
-                listarUsuarios(listaUsuarios);
+                listarUsuarios(listaUsuarios, archivoUsuarios);
                 break;
             case 3:
                 eliminarUsuario(listaUsuarios, archivoUsuarios);

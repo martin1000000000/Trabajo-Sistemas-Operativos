@@ -1,6 +1,6 @@
 # ─── Makefile SistOpe ───────────────────────────────────────
 CXX      = g++
-CXXFLAGS = -Wall -std=c++17
+CXXFLAGS = -Wall -std=c++17 -Iinclude
 SRC      = src/main.cpp src/utilidades.cpp src/usuarios.cpp src/perfiles.cpp
 TARGET   = SistOpe
 
@@ -16,6 +16,6 @@ run: $(TARGET)
 
 # Limpiar ejecutable
 clean:
-	del /Q $(TARGET).exe 2>nul || rm -f $(TARGET)
+	rm -f $(TARGET) $(TARGET).exe
 
 .PHONY: all run clean

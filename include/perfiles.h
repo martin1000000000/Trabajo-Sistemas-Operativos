@@ -10,8 +10,8 @@ void menuPerfiles(ListaPerfiles& listaPerfiles, const string& archivoPerfiles);
 // Ingresa un nuevo perfil (pide datos y lo agrega a memoria + archivo)
 void ingresarPerfil(ListaPerfiles& listaPerfiles, const string& archivoPerfiles);
 
-// Lista todos los perfiles desde memoria
-void listarPerfiles(const ListaPerfiles& listaPerfiles);
+// Lista todos los perfiles desde memoria (o desde archivo si no hay datos cargados)
+void listarPerfiles(ListaPerfiles& listaPerfiles, const string& archivoPerfiles);
 
 // Elimina un perfil por nombre
 void eliminarPerfil(ListaPerfiles& listaPerfiles, const string& archivoPerfiles);
