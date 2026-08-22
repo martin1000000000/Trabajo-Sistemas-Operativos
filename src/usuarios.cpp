@@ -3,6 +3,9 @@
 #include <iostream>
 #include <fstream>
 #include <sstream>
+#include <algorithm>
+#include <cctype>
+#include <iomanip>
 
 using namespace std;
 
@@ -97,8 +100,23 @@ void ingresarUsuario(ListaUsuarios& listaUsuarios, const string& archivoUsuarios
     cout << "Password: ";
     getline(cin, nuevoUsuario.password);
 
-    cout << "Perfil: ";
-    getline(cin, nuevoUsuario.perfil);
+    bool perfilValido = false;
+    do {
+        cout << "Perfil (ADMIN/GENERAL): ";
+        getline(cin, nuevoUsuario.perfil);
+
+        // Quitar espacios
+        nuevoUsuario.perfil.erase(remove_if(nuevoUsuario.perfil.begin(), nuevoUsuario.perfil.end(), ::isspace), nuevoUsuario.perfil.end());
+
+        // Convertir a mayúsculas
+        transform(nuevoUsuario.perfil.begin(), nuevoUsuario.perfil.end(), nuevoUsuario.perfil.begin(), ::toupper);
+
+        if (nuevoUsuario.perfil == "ADMIN" || nuevoUsuario.perfil == "GENERAL") {
+            perfilValido = true;
+        } else {
+            cout << "[ERROR] Perfil invalido. Solo se permite ADMIN o GENERAL." << endl;
+        }
+    } while (!perfilValido);
 
     cout << endl << "  1) guardar   2) cancelar" << endl;
     int opcionGuardar = leerEntero("Opcion : ");
@@ -139,12 +157,18 @@ void listarUsuarios(ListaUsuarios& listaUsuarios, const string& archivoUsuarios)
     }
 
     cout << "---------------------------------------------------------------" << endl;
-    cout << "ID\tNombre\t\t\tUsername\tPerfil" << endl;
+    cout << left << setw(5) << "ID" 
+         << setw(25) << "Nombre" 
+         << setw(15) << "Username" 
+         << "Perfil" << endl;
     cout << "---------------------------------------------------------------" << endl;
 
     for (int i = 0; i < listaUsuarios.cantidad; i++) {
         const Usuario& u = listaUsuarios.usuarios[i];
-        cout << u.id << "\t" << u.nombre << "\t\t" << u.username << "\t\t" << u.perfil << endl;
+        cout << left << setw(5) << u.id 
+             << setw(25) << u.nombre 
+             << setw(15) << u.username 
+             << u.perfil << endl;
     }
 
     cout << "---------------------------------------------------------------" << endl;

@@ -17,7 +17,9 @@ El programa lee el archivo `.env` en la raíz del proyecto para determinar los a
 ## Compilación
 
 ```bash
-g++ src/*.cpp -o SistOpe
+g++ src/*.cpp -Iinclude -o SistOpe
+# O si prefieres automatizar la tarea, usar:
+# make
 ```
 
 ## Ejecución
@@ -37,20 +39,26 @@ SistOpe.exe
 SistOpe/
 ├── .env                  ← Variables de entorno
 ├── .gitignore
+├── Makefile              ← Automatización de compilación
 ├── README.md
 ├── USUARIOS.TXT          ← Generado al guardar usuarios
 ├── PERFILES.TXT          ← Generado al guardar perfiles
-└── src/
+├── include/              ← Archivos de cabecera (.h)
+│   ├── estructuras.h
+│   ├── perfiles.h
+│   ├── usuarios.h
+│   └── utilidades.h
+└── src/                  ← Código fuente (.cpp)
     ├── main.cpp          ← Punto de entrada
-    ├── estructuras.h     ← Structs globales
-    ├── utilidades.h/.cpp ← Funciones auxiliares
-    ├── usuarios.h/.cpp   ← Módulo de usuarios
-    └── perfiles.h/.cpp   ← Módulo de perfiles
+    ├── perfiles.cpp      
+    ├── usuarios.cpp      
+    └── utilidades.cpp    
 ```
 
-## Integrantes
+## Integrantes (Grupo X)
 
 - Martin Arrigo
 - Nicolas Toro
 - Benjamin Neira
 - Diego Mora 
+

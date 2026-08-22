@@ -78,12 +78,13 @@ void guardarPerfilesEnArchivo(const ListaPerfiles& listaPerfiles, const string& 
 
 // ─── Ingresar un nuevo perfil ─────────────────────────────
 void ingresarPerfil(ListaPerfiles& listaPerfiles, const string& archivoPerfiles) {
+    // Límite predefinido por diseño del arreglo en memoria,
     if (listaPerfiles.cantidad >= 10) {
         cout << "[ERROR] Se alcanzo el limite maximo de perfiles (10)." << endl;
         pausar();
         return;
     }
-
+    
     Perfil nuevoPerfil;
     nuevoPerfil.numOpciones = 0;
 
@@ -101,11 +102,11 @@ void ingresarPerfil(ListaPerfiles& listaPerfiles, const string& archivoPerfiles)
         }
     }
 
-    // Pedir opciones (una por una hasta que ingrese -1)
-    cout << "Ingrese las opciones del perfil (numeros enteros, -1 para terminar):" << endl;
+    // Pedir opciones (una por una hasta que ingrese 0)
+    cout << "Ingrese las opciones del perfil (numeros enteros, 0 para terminar):" << endl;
     while (nuevoPerfil.numOpciones < 10) {
-        int opcion = leerEntero("  Opcion " + to_string(nuevoPerfil.numOpciones + 1) + " (-1 para terminar): ");
-        if (opcion == -1) break;
+        int opcion = leerEntero("  Opcion " + to_string(nuevoPerfil.numOpciones + 1) + " (0 para terminar): ");
+        if (opcion == 0) break;
         nuevoPerfil.opciones[nuevoPerfil.numOpciones] = opcion;
         nuevoPerfil.numOpciones++;
     }

@@ -1,6 +1,6 @@
 # ─── Makefile SistOpe ───────────────────────────────────────
 CXX      = g++
-CXXFLAGS = -Wall -std=c++17
+CXXFLAGS = -Wall -std=c++17 -Iinclude
 SRC      = src/main.cpp src/utilidades.cpp src/usuarios.cpp src/perfiles.cpp
 TARGET   = SistOpe
 
