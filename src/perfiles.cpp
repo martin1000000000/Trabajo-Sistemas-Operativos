@@ -89,23 +89,14 @@ void ingresarPerfil(ListaPerfiles& listaPerfiles, const string& archivoPerfiles)
 
     cout << endl << "=== Ingresar Nuevo Perfil ===" << endl;
 
-    bool nombreValido = false;
-    do {
-        cout << "Nombre del perfil (ADMIN/GENERAL): ";
-        getline(cin, nuevoPerfil.nombre);
+    cout << "Nombre del perfil: ";
+    getline(cin, nuevoPerfil.nombre);
 
-        // Quitar espacios
-        nuevoPerfil.nombre.erase(remove_if(nuevoPerfil.nombre.begin(), nuevoPerfil.nombre.end(), ::isspace), nuevoPerfil.nombre.end());
+    // Quitar espacios
+    nuevoPerfil.nombre.erase(remove_if(nuevoPerfil.nombre.begin(), nuevoPerfil.nombre.end(), ::isspace), nuevoPerfil.nombre.end());
 
-        // Convertir a mayúsculas
-        transform(nuevoPerfil.nombre.begin(), nuevoPerfil.nombre.end(), nuevoPerfil.nombre.begin(), ::toupper);
-
-        if (nuevoPerfil.nombre == "ADMIN" || nuevoPerfil.nombre == "GENERAL") {
-            nombreValido = true;
-        } else {
-            cout << "[ERROR] Nombre invalido. Solo se permite ADMIN o GENERAL." << endl;
-        }
-    } while (!nombreValido);
+    // Convertir a mayúsculas
+    transform(nuevoPerfil.nombre.begin(), nuevoPerfil.nombre.end(), nuevoPerfil.nombre.begin(), ::toupper);
 
     // Verificar que el nombre no exista
     for (int i = 0; i < listaPerfiles.perfiles.size(); i++) {
@@ -229,6 +220,15 @@ void eliminarPerfil(ListaPerfiles& listaPerfiles, const string& archivoPerfiles)
         if (j < p.opciones.size() - 1) cout << ", ";
     }
     cout << endl;
+
+    // Alerta si es ADMIN
+    if (p.nombre == "ADMIN") {
+        cout << endl;
+        cout << "╔══════════════════════════════════════════════╗" << endl;
+        cout << "║  [ADVERTENCIA] Estas eliminando el perfil    ║" << endl;
+        cout << "║  ADMIN. Eliminarlo puede afectar el sistema. ║" << endl;
+        cout << "╚══════════════════════════════════════════════╝" << endl;
+    }
 
     // Confirmar eliminación
     cout << endl << "  1) guardar   2) cancelar" << endl;

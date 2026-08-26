@@ -46,6 +46,6 @@ Por ahora el archivo contiene:
 
 ## Limitaciones Conocidas
 
-- **Restricción Inicial de Perfiles:** Según las indicaciones del documento oficial de entrega, el sistema originalmente restringe los perfiles base (tanto al crear un perfil como al asignarlo a un usuario) a ser exclusivamente `"ADMIN"` o `"GENERAL"`. Además, los ingresos son validados automáticamente eliminando espacios y convirtiendo a mayúsculas para evitar errores (ej. "a dmin" -> "ADMIN").
+- **Restricción Inicial de Usuarios:** Según las indicaciones del documento oficial de entrega, el sistema originalmente restringe que, al asignar un perfil a un nuevo **usuario**, este solo puede ser `"ADMIN"` o `"GENERAL"`. (Puedes crear otros perfiles en el módulo de perfiles, pero al asignarlos en usuarios está esta validación por pauta). Además, los ingresos son validados automáticamente eliminando espacios y convirtiendo a mayúsculas para evitar errores (ej. "a dmin" -> "ADMIN").
 - **Eliminación Segura:** Al intentar eliminar un usuario que tiene un perfil tipo `"ADMIN"`, el sistema está diseñado para enviar una alerta antes de permitir su eliminación para proteger cuentas críticas.
 - **Manejo de errores básicos de archivo**: Si el archivo de texto no existe en la primera ejecución, el sistema simplemente lo creará, sin interrumpir el flujo.
