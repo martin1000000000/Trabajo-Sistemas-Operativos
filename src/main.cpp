@@ -19,14 +19,14 @@ int main() {
 
     // ─── 2. Cargar datos desde archivos a memoria ─────────
     ListaUsuarios listaUsuarios;
-    listaUsuarios.cantidad = 0;
+    listaUsuarios.usuarios.clear();
     cargarUsuariosDesdeArchivo(listaUsuarios, archivoUsuarios);
-    cout << "[INFO] Usuarios cargados: " << listaUsuarios.cantidad << endl;
+    cout << "[INFO] Usuarios cargados: " << listaUsuarios.usuarios.size() << endl;
 
     ListaPerfiles listaPerfiles;
-    listaPerfiles.cantidad = 0;
+    listaPerfiles.perfiles.clear();
     cargarPerfilesDesdeArchivo(listaPerfiles, archivoPerfiles);
-    cout << "[INFO] Perfiles cargados: " << listaPerfiles.cantidad << endl;
+    cout << "[INFO] Perfiles cargados: " << listaPerfiles.perfiles.size() << endl;
 
     // ─── 3. Menú principal ────────────────────────────────
     int opcion;

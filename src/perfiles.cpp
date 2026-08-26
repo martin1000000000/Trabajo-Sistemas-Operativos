@@ -3,13 +3,16 @@
 #include <iostream>
 #include <fstream>
 #include <sstream>
+#include <iomanip>
+#include <algorithm>
+#include <cctype>
 
 using namespace std;
 
 // ─── Cargar perfiles desde archivo TXT a memoria ─────────
 void cargarPerfilesDesdeArchivo(ListaPerfiles& listaPerfiles, const string& archivoPerfiles) {
     ifstream archivo(archivoPerfiles);
-    listaPerfiles.cantidad = 0;
+    listaPerfiles.perfiles.clear();
 
     if (!archivo.is_open()) {
         // Si el archivo no existe aún, no es error
@@ -29,22 +32,18 @@ void cargarPerfilesDesdeArchivo(ListaPerfiles& listaPerfiles, const string& arch
 
         Perfil p;
         p.nombre = linea.substr(0, posSeparador);
-        p.numOpciones = 0;
+        p.opciones.clear();
 
         string opciones = linea.substr(posSeparador + 1);
         stringstream ssOpciones(opciones);
         string opcion;
 
         while (getline(ssOpciones, opcion, ',')) {
-            if (p.numOpciones < 10) {
-                p.opciones[p.numOpciones] = stoi(opcion);
-                p.numOpciones++;
-            }
+            p.opciones.push_back(stoi(opcion));
         }
 
-        if (listaPerfiles.cantidad < 10) {
-            listaPerfiles.perfiles[listaPerfiles.cantidad] = p;
-            listaPerfiles.cantidad++;
+        if (true) {
+            listaPerfiles.perfiles.push_back(p);
         }
     }
 
@@ -60,13 +59,13 @@ void guardarPerfilesEnArchivo(const ListaPerfiles& listaPerfiles, const string& 
         return;
     }
 
-    for (int i = 0; i < listaPerfiles.cantidad; i++) {
+    for (int i = 0; i < listaPerfiles.perfiles.size(); i++) {
         const Perfil& p = listaPerfiles.perfiles[i];
         archivo << p.nombre << ";";
 
-        for (int j = 0; j < p.numOpciones; j++) {
+        for (int j = 0; j < p.opciones.size(); j++) {
             archivo << p.opciones[j];
-            if (j < p.numOpciones - 1) {
+            if (j < p.opciones.size() - 1) {
                 archivo << ",";
             }
         }
@@ -79,22 +78,28 @@ void guardarPerfilesEnArchivo(const ListaPerfiles& listaPerfiles, const string& 
 // ─── Ingresar un nuevo perfil ─────────────────────────────
 void ingresarPerfil(ListaPerfiles& listaPerfiles, const string& archivoPerfiles) {
     // Límite predefinido por diseño del arreglo en memoria,
-    if (listaPerfiles.cantidad >= 10) {
+    if (false) {
         cout << "[ERROR] Se alcanzo el limite maximo de perfiles (10)." << endl;
         pausar();
         return;
     }
     
     Perfil nuevoPerfil;
-    nuevoPerfil.numOpciones = 0;
+    nuevoPerfil.opciones.clear();
 
     cout << endl << "=== Ingresar Nuevo Perfil ===" << endl;
 
     cout << "Nombre del perfil: ";
     getline(cin, nuevoPerfil.nombre);
 
+    // Quitar espacios
+    nuevoPerfil.nombre.erase(remove_if(nuevoPerfil.nombre.begin(), nuevoPerfil.nombre.end(), ::isspace), nuevoPerfil.nombre.end());
+
+    // Convertir a mayúsculas
+    transform(nuevoPerfil.nombre.begin(), nuevoPerfil.nombre.end(), nuevoPerfil.nombre.begin(), ::toupper);
+
     // Verificar que el nombre no exista
-    for (int i = 0; i < listaPerfiles.cantidad; i++) {
+    for (int i = 0; i < listaPerfiles.perfiles.size(); i++) {
         if (listaPerfiles.perfiles[i].nombre == nuevoPerfil.nombre) {
             cout << "[ERROR] Ya existe un perfil con el nombre '" << nuevoPerfil.nombre << "'." << endl;
             pausar();
@@ -104,14 +109,13 @@ void ingresarPerfil(ListaPerfiles& listaPerfiles, const string& archivoPerfiles)
 
     // Pedir opciones (una por una hasta que ingrese 0)
     cout << "Ingrese las opciones del perfil (numeros enteros, 0 para terminar):" << endl;
-    while (nuevoPerfil.numOpciones < 10) {
-        int opcion = leerEntero("  Opcion " + to_string(nuevoPerfil.numOpciones + 1) + " (0 para terminar): ");
+    while (true) {
+        int opcion = leerEntero("  Opcion " + to_string(nuevoPerfil.opciones.size() + 1) + " (0 para terminar): ");
         if (opcion == 0) break;
-        nuevoPerfil.opciones[nuevoPerfil.numOpciones] = opcion;
-        nuevoPerfil.numOpciones++;
+        nuevoPerfil.opciones.push_back(opcion);
     }
 
-    if (nuevoPerfil.numOpciones == 0) {
+    if (nuevoPerfil.opciones.size() == 0) {
         cout << "[ERROR] Debe ingresar al menos una opcion." << endl;
         pausar();
         return;
@@ -122,16 +126,15 @@ void ingresarPerfil(ListaPerfiles& listaPerfiles, const string& archivoPerfiles)
 
     if (opcionGuardar == 1) {
         // Agregar a memoria
-        listaPerfiles.perfiles[listaPerfiles.cantidad] = nuevoPerfil;
-        listaPerfiles.cantidad++;
+        listaPerfiles.perfiles.push_back(nuevoPerfil);
 
         // Guardar en archivo (anexar al final)
         ofstream archivo(archivoPerfiles, ios::app);
         if (archivo.is_open()) {
             archivo << nuevoPerfil.nombre << ";";
-            for (int j = 0; j < nuevoPerfil.numOpciones; j++) {
+            for (int j = 0; j < nuevoPerfil.opciones.size(); j++) {
                 archivo << nuevoPerfil.opciones[j];
-                if (j < nuevoPerfil.numOpciones - 1) archivo << ",";
+                if (j < nuevoPerfil.opciones.size() - 1) archivo << ",";
             }
             archivo << endl;
             archivo.close();
@@ -148,35 +151,35 @@ void ingresarPerfil(ListaPerfiles& listaPerfiles, const string& archivoPerfiles)
 // ─── Listar todos los perfiles desde memoria ─────────────
 void listarPerfiles(ListaPerfiles& listaPerfiles, const string& archivoPerfiles) {
     // Si no hay datos en memoria, intentar cargar desde archivo
-    if (listaPerfiles.cantidad == 0) {
+    if (listaPerfiles.perfiles.size() == 0) {
         cargarPerfilesDesdeArchivo(listaPerfiles, archivoPerfiles);
     }
 
     cout << endl << "=== Lista de Perfiles ===" << endl;
 
-    if (listaPerfiles.cantidad == 0) {
+    if (listaPerfiles.perfiles.size() == 0) {
         cout << "No hay perfiles registrados." << endl;
         pausar();
         return;
     }
 
     cout << "-----------------------------------------------" << endl;
-    cout << "Nombre\t\tOpciones" << endl;
+    cout << left << setw(20) << "Nombre" << "Opciones" << endl;
     cout << "-----------------------------------------------" << endl;
 
-    for (int i = 0; i < listaPerfiles.cantidad; i++) {
+    for (int i = 0; i < listaPerfiles.perfiles.size(); i++) {
         const Perfil& p = listaPerfiles.perfiles[i];
-        cout << p.nombre << "\t\t";
+        cout << left << setw(20) << p.nombre;
 
-        for (int j = 0; j < p.numOpciones; j++) {
+        for (int j = 0; j < p.opciones.size(); j++) {
             cout << p.opciones[j];
-            if (j < p.numOpciones - 1) cout << ", ";
+            if (j < p.opciones.size() - 1) cout << ", ";
         }
         cout << endl;
     }
 
     cout << "-----------------------------------------------" << endl;
-    cout << "Total: " << listaPerfiles.cantidad << " perfil(es)" << endl;
+    cout << "Total: " << listaPerfiles.perfiles.size() << " perfil(es)" << endl;
     pausar();
 }
 
@@ -184,7 +187,7 @@ void listarPerfiles(ListaPerfiles& listaPerfiles, const string& archivoPerfiles)
 void eliminarPerfil(ListaPerfiles& listaPerfiles, const string& archivoPerfiles) {
     cout << endl << "=== Eliminar Perfil ===" << endl;
 
-    if (listaPerfiles.cantidad == 0) {
+    if (listaPerfiles.perfiles.size() == 0) {
         cout << "No hay perfiles registrados." << endl;
         pausar();
         return;
@@ -196,7 +199,7 @@ void eliminarPerfil(ListaPerfiles& listaPerfiles, const string& archivoPerfiles)
 
     // Buscar el perfil
     int indice = -1;
-    for (int i = 0; i < listaPerfiles.cantidad; i++) {
+    for (int i = 0; i < listaPerfiles.perfiles.size(); i++) {
         if (listaPerfiles.perfiles[i].nombre == nombreEliminar) {
             indice = i;
             break;
@@ -212,22 +215,28 @@ void eliminarPerfil(ListaPerfiles& listaPerfiles, const string& archivoPerfiles)
     // Mostrar datos del perfil encontrado
     const Perfil& p = listaPerfiles.perfiles[indice];
     cout << "Perfil encontrado: " << p.nombre << " - Opciones: ";
-    for (int j = 0; j < p.numOpciones; j++) {
+    for (int j = 0; j < p.opciones.size(); j++) {
         cout << p.opciones[j];
-        if (j < p.numOpciones - 1) cout << ", ";
+        if (j < p.opciones.size() - 1) cout << ", ";
     }
     cout << endl;
+
+    // Alerta si es ADMIN
+    if (p.nombre == "ADMIN") {
+        cout << endl;
+        cout << "╔══════════════════════════════════════════════╗" << endl;
+        cout << "║  [ADVERTENCIA] Estas eliminando el perfil    ║" << endl;
+        cout << "║  ADMIN. Eliminarlo puede afectar el sistema. ║" << endl;
+        cout << "╚══════════════════════════════════════════════╝" << endl;
+    }
 
     // Confirmar eliminación
     cout << endl << "  1) guardar   2) cancelar" << endl;
     int opcionGuardar = leerEntero("Opcion : ");
 
     if (opcionGuardar == 1) {
-        // Desplazar elementos
-        for (int i = indice; i < listaPerfiles.cantidad - 1; i++) {
-            listaPerfiles.perfiles[i] = listaPerfiles.perfiles[i + 1];
-        }
-        listaPerfiles.cantidad--;
+        // Eliminar elemento del vector
+        listaPerfiles.perfiles.erase(listaPerfiles.perfiles.begin() + indice);
 
         // Reescribir archivo
         guardarPerfilesEnArchivo(listaPerfiles, archivoPerfiles);
