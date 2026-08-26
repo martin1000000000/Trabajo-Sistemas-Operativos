@@ -3,6 +3,7 @@
 #include <iostream>
 #include <fstream>
 #include <sstream>
+#include <iomanip>
 
 using namespace std;
 
@@ -161,12 +162,12 @@ void listarPerfiles(ListaPerfiles& listaPerfiles, const string& archivoPerfiles)
     }
 
     cout << "-----------------------------------------------" << endl;
-    cout << "Nombre\t\tOpciones" << endl;
+    cout << left << setw(20) << "Nombre" << "Opciones" << endl;
     cout << "-----------------------------------------------" << endl;
 
     for (int i = 0; i < listaPerfiles.cantidad; i++) {
         const Perfil& p = listaPerfiles.perfiles[i];
-        cout << p.nombre << "\t\t";
+        cout << left << setw(20) << p.nombre;
 
         for (int j = 0; j < p.numOpciones; j++) {
             cout << p.opciones[j];
