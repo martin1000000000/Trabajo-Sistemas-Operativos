@@ -2,6 +2,7 @@
 #define ESTRUCTURAS_H
 
 #include <string>
+#include <vector>
 using namespace std;
 
 // ─── Struct Usuario ───────────────────────────────────────
@@ -15,21 +16,18 @@ struct Usuario {
 
 // ─── Lista de Usuarios (en memoria) ──────────────────────
 struct ListaUsuarios {
-    Usuario usuarios[100];
-    int cantidad;
+    vector<Usuario> usuarios;
 };
 
 // ─── Struct Perfil ────────────────────────────────────────
 struct Perfil {
     string nombre;       // Nombre del perfil (ej: "ADMIN", "GENERAL")
-    int opciones[10];    // Opciones disponibles (ej: {0,1,2,3,4})
-    int numOpciones;     // Cantidad de opciones en el array
+    vector<int> opciones;    // Opciones disponibles (ej: {0,1,2,3,4})
 };
 
 // ─── Lista de Perfiles (en memoria) ──────────────────────
 struct ListaPerfiles {
-    Perfil perfiles[10];
-    int cantidad;
+    vector<Perfil> perfiles;
 };
 
 #endif // ESTRUCTURAS_H

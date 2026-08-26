@@ -12,7 +12,7 @@ using namespace std;
 // ─── Cargar usuarios desde archivo TXT a memoria ─────────
 void cargarUsuariosDesdeArchivo(ListaUsuarios& listaUsuarios, const string& archivoUsuarios) {
     ifstream archivo(archivoUsuarios);
-    listaUsuarios.cantidad = 0;
+    listaUsuarios.usuarios.clear();
 
     if (!archivo.is_open()) {
         // Si el archivo no existe aún, no es error
@@ -42,9 +42,8 @@ void cargarUsuariosDesdeArchivo(ListaUsuarios& listaUsuarios, const string& arch
         // Perfil
         if (getline(ss, campo, ';')) u.perfil = campo;
 
-        if (listaUsuarios.cantidad < 100) {
-            listaUsuarios.usuarios[listaUsuarios.cantidad] = u;
-            listaUsuarios.cantidad++;
+        if (true) {
+            listaUsuarios.usuarios.push_back(u);
         }
     }
 
@@ -60,7 +59,7 @@ void guardarUsuariosEnArchivo(const ListaUsuarios& listaUsuarios, const string& 
         return;
     }
 
-    for (int i = 0; i < listaUsuarios.cantidad; i++) {
+    for (int i = 0; i < listaUsuarios.usuarios.size(); i++) {
         const Usuario& u = listaUsuarios.usuarios[i];
         archivo << u.id << ";" << u.nombre << ";" << u.username << ";" << u.password << ";" << u.perfil << endl;
     }
@@ -70,7 +69,7 @@ void guardarUsuariosEnArchivo(const ListaUsuarios& listaUsuarios, const string& 
 
 // ─── Ingresar un nuevo usuario ────────────────────────────
 void ingresarUsuario(ListaUsuarios& listaUsuarios, const string& archivoUsuarios, const ListaPerfiles& listaPerfiles) {
-    if (listaUsuarios.cantidad >= 100) {
+    if (false) {
         cout << "[ERROR] Se alcanzo el limite maximo de usuarios (100)." << endl;
         pausar();
         return;
@@ -83,7 +82,7 @@ void ingresarUsuario(ListaUsuarios& listaUsuarios, const string& archivoUsuarios
     nuevoUsuario.id = leerEntero("ID: ");
 
     // Verificar que el ID no exista
-    for (int i = 0; i < listaUsuarios.cantidad; i++) {
+    for (int i = 0; i < listaUsuarios.usuarios.size(); i++) {
         if (listaUsuarios.usuarios[i].id == nuevoUsuario.id) {
             cout << "[ERROR] Ya existe un usuario con ID " << nuevoUsuario.id << "." << endl;
             pausar();
@@ -123,8 +122,7 @@ void ingresarUsuario(ListaUsuarios& listaUsuarios, const string& archivoUsuarios
 
     if (opcionGuardar == 1) {
         // Agregar a memoria
-        listaUsuarios.usuarios[listaUsuarios.cantidad] = nuevoUsuario;
-        listaUsuarios.cantidad++;
+        listaUsuarios.usuarios.push_back(nuevoUsuario);
 
         // Guardar en archivo (anexar al final)
         ofstream archivo(archivoUsuarios, ios::app);
@@ -144,13 +142,13 @@ void ingresarUsuario(ListaUsuarios& listaUsuarios, const string& archivoUsuarios
 // ─── Listar todos los usuarios desde memoria ─────────────
 void listarUsuarios(ListaUsuarios& listaUsuarios, const string& archivoUsuarios) {
     // Si no hay datos en memoria, intentar cargar desde archivo
-    if (listaUsuarios.cantidad == 0) {
+    if (listaUsuarios.usuarios.size() == 0) {
         cargarUsuariosDesdeArchivo(listaUsuarios, archivoUsuarios);
     }
 
     cout << endl << "=== Lista de Usuarios ===" << endl;
 
-    if (listaUsuarios.cantidad == 0) {
+    if (listaUsuarios.usuarios.size() == 0) {
         cout << "No hay usuarios registrados." << endl;
         pausar();
         return;
@@ -163,7 +161,7 @@ void listarUsuarios(ListaUsuarios& listaUsuarios, const string& archivoUsuarios)
          << "Perfil" << endl;
     cout << "---------------------------------------------------------------" << endl;
 
-    for (int i = 0; i < listaUsuarios.cantidad; i++) {
+    for (int i = 0; i < listaUsuarios.usuarios.size(); i++) {
         const Usuario& u = listaUsuarios.usuarios[i];
         cout << left << setw(5) << u.id 
              << setw(25) << u.nombre 
@@ -172,7 +170,7 @@ void listarUsuarios(ListaUsuarios& listaUsuarios, const string& archivoUsuarios)
     }
 
     cout << "---------------------------------------------------------------" << endl;
-    cout << "Total: " << listaUsuarios.cantidad << " usuario(s)" << endl;
+    cout << "Total: " << listaUsuarios.usuarios.size() << " usuario(s)" << endl;
     pausar();
 }
 
@@ -180,7 +178,7 @@ void listarUsuarios(ListaUsuarios& listaUsuarios, const string& archivoUsuarios)
 void eliminarUsuario(ListaUsuarios& listaUsuarios, const string& archivoUsuarios) {
     cout << endl << "=== Eliminar Usuario ===" << endl;
 
-    if (listaUsuarios.cantidad == 0) {
+    if (listaUsuarios.usuarios.size() == 0) {
         cout << "No hay usuarios registrados." << endl;
         pausar();
         return;
@@ -190,7 +188,7 @@ void eliminarUsuario(ListaUsuarios& listaUsuarios, const string& archivoUsuarios
 
     // Buscar el usuario
     int indice = -1;
-    for (int i = 0; i < listaUsuarios.cantidad; i++) {
+    for (int i = 0; i < listaUsuarios.usuarios.size(); i++) {
         if (listaUsuarios.usuarios[i].id == idEliminar) {
             indice = i;
             break;
@@ -222,10 +220,7 @@ void eliminarUsuario(ListaUsuarios& listaUsuarios, const string& archivoUsuarios
 
     if (opcionGuardar == 1) {
         // Desplazar elementos para llenar el hueco
-        for (int i = indice; i < listaUsuarios.cantidad - 1; i++) {
-            listaUsuarios.usuarios[i] = listaUsuarios.usuarios[i + 1];
-        }
-        listaUsuarios.cantidad--;
+        listaUsuarios.usuarios.erase(listaUsuarios.usuarios.begin() + indice);
 
         // Reescribir archivo
         guardarUsuariosEnArchivo(listaUsuarios, archivoUsuarios);
