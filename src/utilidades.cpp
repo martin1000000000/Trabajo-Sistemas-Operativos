@@ -45,17 +45,21 @@ string leerVariableEnv(const string& nombreVariable) {
 
 // ─── Leer un entero con validación ────────────────────────
 int leerEntero(const string& mensaje) {
+    string linea;
     int valor;
     while (true) {
         cout << mensaje;
-        if (cin >> valor) {
-            cin.ignore(10000, '\n'); // Limpiar buffer
+        if (!getline(cin, linea)) {
+            return 0;
+        } 
+        
+        stringstream ss(linea);
+        char sobrante;
+        if ((ss >> valor) && !(ss >> sobrante)) {
             return valor;
-        } else {
-            cout << "[ERROR] Debe ingresar un numero entero." << endl;
-            cin.clear();
-            cin.ignore(10000, '\n');
         }
+        
+        cout << "[ERROR] Debe ingresar un numero entero." << endl;
     }
 }
 

@@ -59,11 +59,11 @@ void guardarPerfilesEnArchivo(const ListaPerfiles& listaPerfiles, const string& 
         return;
     }
 
-    for (int i = 0; i < listaPerfiles.perfiles.size(); i++) {
+    for (size_t i = 0; i < listaPerfiles.perfiles.size(); i++) {
         const Perfil& p = listaPerfiles.perfiles[i];
         archivo << p.nombre << ";";
 
-        for (int j = 0; j < p.opciones.size(); j++) {
+        for (size_t j = 0; j < p.opciones.size(); j++) {
             archivo << p.opciones[j];
             if (j < p.opciones.size() - 1) {
                 archivo << ",";
@@ -77,13 +77,7 @@ void guardarPerfilesEnArchivo(const ListaPerfiles& listaPerfiles, const string& 
 
 // ─── Ingresar un nuevo perfil ─────────────────────────────
 void ingresarPerfil(ListaPerfiles& listaPerfiles, const string& archivoPerfiles) {
-    // Límite predefinido por diseño del arreglo en memoria,
-    if (false) {
-        cout << "[ERROR] Se alcanzo el limite maximo de perfiles (10)." << endl;
-        pausar();
-        return;
-    }
-    
+
     Perfil nuevoPerfil;
     nuevoPerfil.opciones.clear();
 
@@ -99,7 +93,7 @@ void ingresarPerfil(ListaPerfiles& listaPerfiles, const string& archivoPerfiles)
     transform(nuevoPerfil.nombre.begin(), nuevoPerfil.nombre.end(), nuevoPerfil.nombre.begin(), ::toupper);
 
     // Verificar que el nombre no exista
-    for (int i = 0; i < listaPerfiles.perfiles.size(); i++) {
+    for (size_t i = 0; i < listaPerfiles.perfiles.size(); i++) {
         if (listaPerfiles.perfiles[i].nombre == nuevoPerfil.nombre) {
             cout << "[ERROR] Ya existe un perfil con el nombre '" << nuevoPerfil.nombre << "'." << endl;
             pausar();
@@ -132,7 +126,7 @@ void ingresarPerfil(ListaPerfiles& listaPerfiles, const string& archivoPerfiles)
         ofstream archivo(archivoPerfiles, ios::app);
         if (archivo.is_open()) {
             archivo << nuevoPerfil.nombre << ";";
-            for (int j = 0; j < nuevoPerfil.opciones.size(); j++) {
+            for (size_t j = 0; j < nuevoPerfil.opciones.size(); j++) {
                 archivo << nuevoPerfil.opciones[j];
                 if (j < nuevoPerfil.opciones.size() - 1) archivo << ",";
             }
@@ -167,11 +161,11 @@ void listarPerfiles(ListaPerfiles& listaPerfiles, const string& archivoPerfiles)
     cout << left << setw(20) << "Nombre" << "Opciones" << endl;
     cout << "-----------------------------------------------" << endl;
 
-    for (int i = 0; i < listaPerfiles.perfiles.size(); i++) {
+    for (size_t i = 0; i < listaPerfiles.perfiles.size(); i++) {
         const Perfil& p = listaPerfiles.perfiles[i];
         cout << left << setw(20) << p.nombre;
 
-        for (int j = 0; j < p.opciones.size(); j++) {
+        for (size_t j = 0; j < p.opciones.size(); j++) {
             cout << p.opciones[j];
             if (j < p.opciones.size() - 1) cout << ", ";
         }
@@ -199,7 +193,7 @@ void eliminarPerfil(ListaPerfiles& listaPerfiles, const string& archivoPerfiles)
 
     // Buscar el perfil
     int indice = -1;
-    for (int i = 0; i < listaPerfiles.perfiles.size(); i++) {
+    for (size_t i = 0; i < listaPerfiles.perfiles.size(); i++) {
         if (listaPerfiles.perfiles[i].nombre == nombreEliminar) {
             indice = i;
             break;
@@ -215,7 +209,7 @@ void eliminarPerfil(ListaPerfiles& listaPerfiles, const string& archivoPerfiles)
     // Mostrar datos del perfil encontrado
     const Perfil& p = listaPerfiles.perfiles[indice];
     cout << "Perfil encontrado: " << p.nombre << " - Opciones: ";
-    for (int j = 0; j < p.opciones.size(); j++) {
+    for (size_t j = 0; j < p.opciones.size(); j++) {
         cout << p.opciones[j];
         if (j < p.opciones.size() - 1) cout << ", ";
     }

@@ -20,6 +20,6 @@ void eliminarUsuario(ListaUsuarios& listaUsuarios, const string& archivoUsuarios
 void cargarUsuariosDesdeArchivo(ListaUsuarios& listaUsuarios, const string& archivoUsuarios);
 
 // Guarda toda la lista de usuarios al archivo TXT (reescribe completo)
-void guardarUsuariosEnArchivo(const ListaUsuarios& listaUsuarios, const string& archivoUsuarios);
+void guardarUsuariosEnArchivo(ListaUsuarios& listaUsuarios, const string& archivoUsuarios);
 
 #endif // USUARIOS_H
