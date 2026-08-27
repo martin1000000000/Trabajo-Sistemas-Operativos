@@ -203,6 +203,12 @@ void eliminarPerfil(ListaPerfiles& listaPerfiles, const string& archivoPerfiles)
     cout << "Ingrese el nombre del perfil a eliminar: ";
     getline(cin, nombreEliminar);
 
+    // Quitar espacios
+    nombreEliminar.erase(remove_if(nombreEliminar.begin(), nombreEliminar.end(), ::isspace), nombreEliminar.end());
+
+    // Convertir a mayúsculas
+    transform(nombreEliminar.begin(), nombreEliminar.end(), nombreEliminar.begin(), ::toupper);
+
     // Buscar el perfil
     int indice = -1;
     for (size_t i = 0; i < listaPerfiles.perfiles.size(); i++) {
