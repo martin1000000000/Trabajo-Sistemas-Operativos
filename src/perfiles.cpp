@@ -83,11 +83,17 @@ void ingresarPerfil(ListaPerfiles& listaPerfiles, const string& archivoPerfiles)
 
     cout << endl << "=== Ingresar Nuevo Perfil ===" << endl;
 
-    cout << "Nombre del perfil: ";
-    getline(cin, nuevoPerfil.nombre);
+    do {
+        cout << "Nombre del perfil: ";
+        getline(cin, nuevoPerfil.nombre);
 
-    // Quitar espacios
-    nuevoPerfil.nombre.erase(remove_if(nuevoPerfil.nombre.begin(), nuevoPerfil.nombre.end(), ::isspace), nuevoPerfil.nombre.end());
+        // Quitar espacios
+        nuevoPerfil.nombre.erase(remove_if(nuevoPerfil.nombre.begin(), nuevoPerfil.nombre.end(), ::isspace), nuevoPerfil.nombre.end());
+
+        if (nuevoPerfil.nombre.empty()) {
+            cout << "[ERROR] El nombre del perfil no puede estar vacio." << endl;
+        }
+    } while (nuevoPerfil.nombre.empty());
 
     // Convertir a mayúsculas
     transform(nuevoPerfil.nombre.begin(), nuevoPerfil.nombre.end(), nuevoPerfil.nombre.begin(), ::toupper);
@@ -102,10 +108,16 @@ void ingresarPerfil(ListaPerfiles& listaPerfiles, const string& archivoPerfiles)
     }
 
     // Pedir opciones (una por una hasta que ingrese 0)
-    cout << "Ingrese las opciones del perfil (numeros enteros, 0 para terminar):" << endl;
+    cout << "Ingrese las opciones del perfil (numeros enteros mayores a 0, 0 para terminar):" << endl;
     while (true) {
         int opcion = leerEntero("  Opcion " + to_string(nuevoPerfil.opciones.size() + 1) + " (0 para terminar): ");
         if (opcion == 0) break;
+        
+        if (opcion < 0) {
+            cout << "[ERROR] Las opciones no pueden ser negativas. Ingrese una opcion mayor a 0." << endl;
+            continue;
+        }
+        
         nuevoPerfil.opciones.push_back(opcion);
     }
 
