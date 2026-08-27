@@ -59,7 +59,7 @@ void guardarUsuariosEnArchivo(const ListaUsuarios& listaUsuarios, const string& 
         return;
     }
 
-    for (int i = 0; i < listaUsuarios.usuarios.size(); i++) {
+    for (size_t i = 0; i < listaUsuarios.usuarios.size(); i++) {
         const Usuario& u = listaUsuarios.usuarios[i];
         archivo << u.id << ";" << u.nombre << ";" << u.username << ";" << u.password << ";" << u.perfil << endl;
     }
@@ -82,7 +82,7 @@ void ingresarUsuario(ListaUsuarios& listaUsuarios, const string& archivoUsuarios
     nuevoUsuario.id = leerEntero("ID: ");
 
     // Verificar que el ID no exista
-    for (int i = 0; i < listaUsuarios.usuarios.size(); i++) {
+    for (size_t i = 0; i < listaUsuarios.usuarios.size(); i++) {
         if (listaUsuarios.usuarios[i].id == nuevoUsuario.id) {
             cout << "[ERROR] Ya existe un usuario con ID " << nuevoUsuario.id << "." << endl;
             pausar();
@@ -161,7 +161,7 @@ void listarUsuarios(ListaUsuarios& listaUsuarios, const string& archivoUsuarios)
          << "Perfil" << endl;
     cout << "---------------------------------------------------------------" << endl;
 
-    for (int i = 0; i < listaUsuarios.usuarios.size(); i++) {
+    for (size_t i = 0; i < listaUsuarios.usuarios.size(); i++) {
         const Usuario& u = listaUsuarios.usuarios[i];
         cout << left << setw(5) << u.id 
              << setw(25) << u.nombre 
@@ -188,7 +188,7 @@ void eliminarUsuario(ListaUsuarios& listaUsuarios, const string& archivoUsuarios
 
     // Buscar el usuario
     int indice = -1;
-    for (int i = 0; i < listaUsuarios.usuarios.size(); i++) {
+    for (size_t i = 0; i < listaUsuarios.usuarios.size(); i++) {
         if (listaUsuarios.usuarios[i].id == idEliminar) {
             indice = i;
             break;
