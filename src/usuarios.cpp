@@ -69,17 +69,17 @@ void guardarUsuariosEnArchivo(const ListaUsuarios& listaUsuarios, const string& 
 
 // ─── Ingresar un nuevo usuario ────────────────────────────
 void ingresarUsuario(ListaUsuarios& listaUsuarios, const string& archivoUsuarios, const ListaPerfiles& listaPerfiles) {
-    if (false) {
-        cout << "[ERROR] Se alcanzo el limite maximo de usuarios (100)." << endl;
-        pausar();
-        return;
-    }
 
     Usuario nuevoUsuario;
 
     cout << endl << "=== Ingresar Nuevo Usuario ===" << endl;
 
-    nuevoUsuario.id = leerEntero("ID: ");
+    do {
+        nuevoUsuario.id = leerEntero("ID: ");
+        if (nuevoUsuario.id <= 0) {
+            cout << "[ERROR] El ID debe ser mayor a 0. Intente nuevamente." << endl;
+        }
+    } while (nuevoUsuario.id <= 0);
 
     // Verificar que el ID no exista
     for (size_t i = 0; i < listaUsuarios.usuarios.size(); i++) {
@@ -90,14 +90,30 @@ void ingresarUsuario(ListaUsuarios& listaUsuarios, const string& archivoUsuarios
         }
     }
 
-    cout << "Nombre: ";
-    getline(cin, nuevoUsuario.nombre);
+    do {
+        cout << "Nombre: ";
+        getline(cin, nuevoUsuario.nombre);
+        // Opcional: remover espacios iniciales/finales si quisieras
+        if (nuevoUsuario.nombre.empty()) {
+            cout << "[ERROR] El nombre no puede estar vacio. Intente nuevamente." << endl;
+        }
+    } while (nuevoUsuario.nombre.empty());
 
-    cout << "Username: ";
-    getline(cin, nuevoUsuario.username);
+    do {
+        cout << "Username: ";
+        getline(cin, nuevoUsuario.username);
+        if (nuevoUsuario.username.empty()) {
+            cout << "[ERROR] El username no puede estar vacio. Intente nuevamente." << endl;
+        }
+    } while (nuevoUsuario.username.empty());
 
-    cout << "Password: ";
-    getline(cin, nuevoUsuario.password);
+    do {
+        cout << "Password: ";
+        getline(cin, nuevoUsuario.password);
+        if (nuevoUsuario.password.empty()) {
+            cout << "[ERROR] La password no puede estar vacia. Intente nuevamente." << endl;
+        }
+    } while (nuevoUsuario.password.empty());
 
     bool perfilValido = false;
     do {

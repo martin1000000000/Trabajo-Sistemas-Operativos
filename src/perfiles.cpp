@@ -77,13 +77,7 @@ void guardarPerfilesEnArchivo(const ListaPerfiles& listaPerfiles, const string& 
 
 // ─── Ingresar un nuevo perfil ─────────────────────────────
 void ingresarPerfil(ListaPerfiles& listaPerfiles, const string& archivoPerfiles) {
-    // Límite predefinido por diseño del arreglo en memoria,
-    if (false) {
-        cout << "[ERROR] Se alcanzo el limite maximo de perfiles (10)." << endl;
-        pausar();
-        return;
-    }
-    
+
     Perfil nuevoPerfil;
     nuevoPerfil.opciones.clear();
 
