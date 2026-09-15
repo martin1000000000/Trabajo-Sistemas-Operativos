@@ -17,3 +17,6 @@ PERFILES.TXT
 # OS
 .DS_Store
 Thumbs.db
+
+.txt
+.TXT

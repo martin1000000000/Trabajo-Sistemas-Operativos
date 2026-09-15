@@ -1,51 +1,47 @@
-# SistOpe: Administrador de Usuarios y Perfiles
+# SistOpe: Administrador de Usuarios y Perfiles (Entrega 2)
 
 ## Propósito de la aplicación
-SistOpe es un sistema desarrollado para la asignatura de Sistemas Operativos (INFO198). En esta primera entrega, el sistema consiste en un módulo base llamado **Administrador de Usuarios y Perfiles**. Su propósito principal es gestionar la creación, eliminación y listado de usuarios y perfiles, manteniendo persistencia de datos a través de archivos de texto plano. Todos los registros y estructuras se gestionan utilizando memoria dinámica (`std::vector`) para garantizar que el sistema pueda crecer sin límites de almacenamiento predefinidos.
+SistOpe es un sistema desarrollado para la asignatura de Sistemas Operativos (INFO198). En esta **Segunda Entrega**, el sistema ha evolucionado de un simple gestor a un entorno de consola interactivo más completo. Ahora implementa persistencia de memoria binaria, control de acceso mediante login por consola, validación estricta de permisos por perfiles, y llamadas a subprocesos externos.
 
 ## Cómo ejecutar
 
-El proyecto incluye un `Makefile` preparado para entornos de Windows (MinGW/MSYS2).
+El proyecto incluye un `Makefile` preparado para entornos de Windows (MinGW/MSYS2) que compilará tanto el programa principal como el subprograma matemático externo.
 
 1. Abre tu terminal y sitúate en el directorio raíz del proyecto (`Trabajo-Sistemas-Operativos`).
 2. Compila el código fuente ejecutando el siguiente comando:
    ```bash
    mingw32-make
    ```
-3. Una vez compilado correctamente sin errores, ejecuta la aplicación:
+3. Una vez compilado, debes ejecutar el sistema pasando obligatoriamente tus credenciales de acceso y un archivo de prueba por parámetro:
    ```bash
-   ./SistOpe
+   ./SistOpe.exe -u <usuario> -p <contraseña> -f <archivo_de_texto.txt>
    ```
+   *Ejemplo:* `./SistOpe.exe -u admin -p 123 -f prueba.txt`
 
-*(Nota: Puedes ejecutar `mingw32-make clean` en cualquier momento para limpiar los archivos binarios generados).*
+*(Nota: Puedes ejecutar `mingw32-make clean` en cualquier momento para limpiar los ejecutables generados).*
+
+## Nuevas Características (Entrega 2)
+
+### 1. Parámetros de Interfaz de Línea de Comandos (CLI)
+El sistema ahora valida que se inicien con los parámetros requeridos (`-u`, `-p`, `-f`). Si el usuario o contraseña no coinciden exactamente con la base de datos binaria, se bloquea el acceso.
+
+### 2. Base de Datos Binaria y Archivos Espejo
+Por requerimiento de la rúbrica, la lectura y escritura de los *structs* se realiza copiando el bloque completo de memoria en formato binario (archivos `.DAT`). Sin embargo, para mantener la transparencia y facilitar la corrección, el sistema implementa **Archivos Espejo**: cada vez que guarda en binario, genera automáticamente un clon en texto plano (`USUARIOS.TXT` y `PERFILES.TXT`) para fácil auditoría humana.
+
+### 3. Autoincremento y Validación Dinámica de Perfiles
+Al registrar un nuevo usuario en la Opción 1 (exclusiva para perfil ADMIN), el sistema le asigna un `ID` automáticamente. Además, ya no está bloqueado estáticamente a "ADMIN" y "GENERAL"; el sistema lee la lista de perfiles reales desde la base de datos y solo permite elegir perfiles válidos existentes.
+
+### 4. Menú Interactivo con Permisos por Perfil
+Se implementó un menú de 7 opciones. El sistema carga la matriz numérica de opciones habilitadas para el perfil del usuario logueado. Si un usuario intenta acceder a una opción para la cual no tiene permiso asignado, el acceso es denegado dinámicamente.
+
+### 5. Multiplicador de Matrices Independiente (Subproceso)
+La Opción 2 de multiplicación de matrices está desacoplada. Se programó como una "caja negra matemática" independiente (`multiplicador.exe`). Al elegir esta opción, el sistema principal invoca internamente a este subprograma pasándole solo las rutas y el separador. 
+
+### 6. Contador de Palabras y Letras (Opciones 6 y 7)
+Un motor unificado lee archivos de texto de cualquier tamaño, contando palabras, vocales, consonantes y caracteres especiales. Puede procesar automáticamente el archivo recibido por el argumento inicial `-f` (Opción 6) o recibir una nueva ruta manual (Opción 7). Es capaz de procesar sin problemas los libros gigantes (>50MB) de la carpeta `LIBROS`.
 
 ## Variables de entorno (.env)
 
-El sistema soporta la lectura de variables de entorno mediante un archivo `.env` ubicado en la raíz del proyecto. Este archivo sirve para configurar de forma externa las rutas de los archivos de texto que el sistema usará para almacenar los datos.
-
-Por ahora el archivo contiene:
-- `USER_FILE=USUARIOS.TXT`: Define el nombre/ruta del archivo donde se guardarán y leerán los usuarios registrados.
-- `PERFIL_FILE=PERFILES.TXT`: Define el nombre/ruta del archivo donde se guardarán y leerán los perfiles creados.
-
-## Contexto de Archivos
-
-- **`src/main.cpp`**: Punto de entrada del programa. Coordina la carga inicial de datos, carga las variables de entorno y despliega el menú principal interactivo.
-- **`src/usuarios.cpp` / `include/usuarios.h`**: Contiene toda la lógica para registrar, listar, eliminar y guardar usuarios. Manipula el vector dinámico de `Usuario`.
-- **`src/perfiles.cpp` / `include/perfiles.h`**: Gestiona las operaciones de los perfiles (crear, listar, borrar, guardar). Administra el vector dinámico de `Perfil`.
-- **`src/utilidades.cpp` / `include/utilidades.h`**: Provee herramientas de uso general como lectura segura de enteros, limpieza de pantalla, pausa y carga del archivo `.env`.
-- **`include/estructuras.h`**: Define los structs fundamentales del programa (`Usuario`, `Perfil`, `ListaUsuarios`, `ListaPerfiles`). Utiliza `std::vector` para manejar la memoria dinámicamente.
-- **`USUARIOS.TXT` / `PERFILES.TXT`**: Archivos de base de datos en texto plano donde se almacena de forma persistente la información del sistema.
-
-## Flujo de ejecución
-
-1. **Arranque e Inicialización**: Al iniciar, el programa lee el archivo `.env` para obtener las rutas de la base de datos (`USER_FILE` y `PERFIL_FILE`).
-2. **Carga en memoria**: Se lee secuencialmente la información almacenada en los archivos `.TXT` y se guarda en memoria dinámica (mediante los vectores `ListaUsuarios` y `ListaPerfiles`).
-3. **Despliegue del Menú Principal**: Se presenta la consola interactiva donde el usuario puede navegar a través del módulo de gestión de usuarios o el de perfiles. Los identificadores de opción son tratados internamente con números y la opción 0 permite salir.
-4. **Operaciones CRUD**: Al crear o eliminar usuarios/perfiles, las operaciones se ejecutan tanto en la memoria temporal (el `vector`) como directamente reescribiendo o agregando al archivo `.TXT`, asegurando consistencia.
-5. **Cierre**: Al seleccionar la opción `0`, se liberan recursos y finaliza la ejecución.
-
-## Limitaciones Conocidas
-
-- **Restricción Inicial de Usuarios:** Según las indicaciones del documento oficial de entrega, el sistema originalmente restringe que, al asignar un perfil a un nuevo **usuario**, este solo puede ser `"ADMIN"` o `"GENERAL"`. (Puedes crear otros perfiles en el módulo de perfiles, pero al asignarlos en usuarios está esta validación por pauta). Además, los ingresos son validados automáticamente eliminando espacios y convirtiendo a mayúsculas para evitar errores (ej. "a dmin" -> "ADMIN").
-- **Eliminación Segura:** Al intentar eliminar un usuario que tiene un perfil tipo `"ADMIN"`, el sistema está diseñado para enviar una alerta antes de permitir su eliminación para proteger cuentas críticas.
-- **Manejo de errores básicos de archivo**: Si el archivo de texto no existe en la primera ejecución, el sistema simplemente lo creará, sin interrumpir el flujo.
+El sistema lee las rutas maestras de su base de datos desde un archivo `.env` ubicado en la raíz.
+- `USER_FILE=USUARIOS.DAT`: Define el archivo binario principal de usuarios.
+- `PERFIL_FILE=PERFILES.DAT`: Define el archivo binario principal de perfiles.

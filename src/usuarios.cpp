@@ -6,137 +6,139 @@
 #include <algorithm>
 #include <cctype>
 #include <iomanip>
+#include <cstring>
 
 using namespace std;
 
-// ─── Cargar usuarios desde archivo TXT a memoria ─────────
+// ─── Cargar usuarios desde archivo BINARIO a memoria ─────────
 void cargarUsuariosDesdeArchivo(ListaUsuarios& listaUsuarios, const string& archivoUsuarios) {
-    ifstream archivo(archivoUsuarios);
+    FILE* file = fopen(archivoUsuarios.c_str(), "rb");
     listaUsuarios.usuarios.clear();
 
-    if (!archivo.is_open()) {
+    if (!file) {
         // Si el archivo no existe aún, no es error
         return;
     }
 
-    string linea;
-    while (getline(archivo, linea)) {
-        if (linea.empty()) continue;
-
-        // Eliminar posible \r al final (Windows)
-        if (!linea.empty() && linea.back() == '\r') linea.pop_back();
-
-        // Formato: id;nombre;username;password;perfil
-        stringstream ss(linea);
-        string campo;
-        Usuario u;
-
-        // ID
-        if (getline(ss, campo, ';')) u.id = stoi(campo);
-        // Nombre
-        if (getline(ss, campo, ';')) u.nombre = campo;
-        // Username
-        if (getline(ss, campo, ';')) u.username = campo;
-        // Password
-        if (getline(ss, campo, ';')) u.password = campo;
-        // Perfil
-        if (getline(ss, campo, ';')) u.perfil = campo;
-
-        if (true) {
-            listaUsuarios.usuarios.push_back(u);
-        }
+    Usuario u;
+    while (fread(&u, sizeof(Usuario), 1, file) == 1) {
+        listaUsuarios.usuarios.push_back(u);
     }
 
-    archivo.close();
+    fclose(file);
 }
 
-// ─── Guardar todos los usuarios al archivo TXT ───────────
+// ─── Guardar todos los usuarios al archivo BINARIO ───────────
 void guardarUsuariosEnArchivo(ListaUsuarios& listaUsuarios, const string& archivoUsuarios) {
     // Ordena de menor a mayor por id
     sort(listaUsuarios.usuarios.begin(), listaUsuarios.usuarios.end(), [](const Usuario& a, const Usuario& b) {
         return a.id < b.id;
     });
 
-    ofstream archivo(archivoUsuarios);
+    FILE* file = fopen(archivoUsuarios.c_str(), "wb");
 
-    if (!archivo.is_open()) {
+    if (!file) {
         cout << "[ERROR] No se pudo abrir el archivo " << archivoUsuarios << " para escritura." << endl;
         return;
     }
 
     for (size_t i = 0; i < listaUsuarios.usuarios.size(); i++) {
-        const Usuario& u = listaUsuarios.usuarios[i];
-        archivo << u.id << ";" << u.nombre << ";" << u.username << ";" << u.password << ";" << u.perfil << endl;
+        fwrite(&listaUsuarios.usuarios[i], sizeof(Usuario), 1, file);
     }
 
-    archivo.close();
+    fclose(file);
+
+    // Guardar copia en TXT para auditoría
+    string archivoTXT = archivoUsuarios;
+    size_t pos = archivoTXT.find(".DAT");
+    if (pos != string::npos) {
+        archivoTXT.replace(pos, 4, ".TXT");
+    } else {
+        archivoTXT += ".TXT";
+    }
+
+    ofstream outTXT(archivoTXT);
+    if (outTXT.is_open()) {
+        outTXT << "ID;Nombre;Username;Perfil" << endl;
+        for (size_t i = 0; i < listaUsuarios.usuarios.size(); i++) {
+            const Usuario& u = listaUsuarios.usuarios[i];
+            outTXT << u.id << ";" << u.nombre << ";" << u.username << ";" << u.perfil << endl;
+        }
+        outTXT.close();
+    }
 }
 
 // ─── Ingresar un nuevo usuario ────────────────────────────
 void ingresarUsuario(ListaUsuarios& listaUsuarios, const string& archivoUsuarios, const ListaPerfiles& listaPerfiles) {
 
     Usuario nuevoUsuario;
+    memset(&nuevoUsuario, 0, sizeof(Usuario)); // Limpiar basura de memoria
 
     cout << endl << "=== Ingresar Nuevo Usuario ===" << endl;
 
-    nuevoUsuario.id = leerEntero("ID: ");
-
-    if (nuevoUsuario.id <= 0) {
-        cout << "[ERROR] El ID no puede ser menor o igual a 0." << endl;
-        pausar();
-        return;
-    }
-
-    // Verificar que el ID no exista
+    int maxId = 0;
     for (size_t i = 0; i < listaUsuarios.usuarios.size(); i++) {
-        if (listaUsuarios.usuarios[i].id == nuevoUsuario.id) {
-            cout << "[ERROR] Ya existe un usuario con ID " << nuevoUsuario.id << "." << endl;
-            pausar();
-            return;
+        if (listaUsuarios.usuarios[i].id > maxId) {
+            maxId = listaUsuarios.usuarios[i].id;
         }
     }
+    nuevoUsuario.id = maxId + 1;
+    cout << "ID asignado automaticamente: " << nuevoUsuario.id << endl;
 
+    string inputTemp;
     do {
         cout << "Nombre: ";
-        getline(cin, nuevoUsuario.nombre);
-        if (nuevoUsuario.nombre.empty()) {
+        getline(cin, inputTemp);
+        if (inputTemp.empty()) {
             cout << "[ERROR] El nombre no puede estar vacio. Intente nuevamente." << endl;
         }
-    } while (nuevoUsuario.nombre.empty());
+    } while (inputTemp.empty());
+    strncpy(nuevoUsuario.nombre, inputTemp.c_str(), sizeof(nuevoUsuario.nombre) - 1);
 
     do {
         cout << "Username: ";
-        getline(cin, nuevoUsuario.username);
-        if (nuevoUsuario.username.empty()) {
+        getline(cin, inputTemp);
+        if (inputTemp.empty()) {
             cout << "[ERROR] El username no puede estar vacio. Intente nuevamente." << endl;
         }
-    } while (nuevoUsuario.username.empty());
+    } while (inputTemp.empty());
+    strncpy(nuevoUsuario.username, inputTemp.c_str(), sizeof(nuevoUsuario.username) - 1);
 
     do {
         cout << "Password: ";
-        getline(cin, nuevoUsuario.password);
-        if (nuevoUsuario.password.empty()) {
+        getline(cin, inputTemp);
+        if (inputTemp.empty()) {
             cout << "[ERROR] La password no puede estar vacia. Intente nuevamente." << endl;
         }
-    } while (nuevoUsuario.password.empty());
+    } while (inputTemp.empty());
+    strncpy(nuevoUsuario.password, inputTemp.c_str(), sizeof(nuevoUsuario.password) - 1);
 
     bool perfilValido = false;
     do {
-        cout << "Perfil (ADMIN/GENERAL): ";
-        getline(cin, nuevoUsuario.perfil);
+        cout << "Perfiles disponibles:" << endl;
+        for (size_t i = 0; i < listaPerfiles.perfiles.size(); i++) {
+            cout << " - " << listaPerfiles.perfiles[i].nombre << endl;
+        }
+        cout << "Perfil: ";
+        getline(cin, inputTemp);
 
         // Quitar espacios
-        nuevoUsuario.perfil.erase(remove_if(nuevoUsuario.perfil.begin(), nuevoUsuario.perfil.end(), ::isspace), nuevoUsuario.perfil.end());
-
+        inputTemp.erase(remove_if(inputTemp.begin(), inputTemp.end(), ::isspace), inputTemp.end());
         // Convertir a mayúsculas
-        transform(nuevoUsuario.perfil.begin(), nuevoUsuario.perfil.end(), nuevoUsuario.perfil.begin(), ::toupper);
+        transform(inputTemp.begin(), inputTemp.end(), inputTemp.begin(), ::toupper);
 
-        if (nuevoUsuario.perfil == "ADMIN" || nuevoUsuario.perfil == "GENERAL") {
-            perfilValido = true;
-        } else {
-            cout << "[ERROR] Perfil invalido. Solo se permite ADMIN o GENERAL." << endl;
+        for (size_t i = 0; i < listaPerfiles.perfiles.size(); i++) {
+            if (inputTemp == listaPerfiles.perfiles[i].nombre) {
+                perfilValido = true;
+                break;
+            }
+        }
+
+        if (!perfilValido) {
+            cout << "[ERROR] Perfil invalido. Debe ser uno de los listados." << endl;
         }
     } while (!perfilValido);
+    strncpy(nuevoUsuario.perfil, inputTemp.c_str(), sizeof(nuevoUsuario.perfil) - 1);
 
     cout << endl << "  1) guardar   2) cancelar" << endl;
     int opcionGuardar = leerEntero("Opcion : ");
@@ -221,7 +223,7 @@ void eliminarUsuario(ListaUsuarios& listaUsuarios, const string& archivoUsuarios
     cout << "Usuario encontrado: " << u.nombre << " (" << u.username << ") - Perfil: " << u.perfil << endl;
 
     // Alerta si es ADMIN
-    if (u.perfil == "ADMIN") {
+    if (strcmp(u.perfil, "ADMIN") == 0) {
         cout << endl;
         cout << "╔══════════════════════════════════════════════╗" << endl;
         cout << "║  [ADVERTENCIA] Este usuario tiene perfil     ║" << endl;
