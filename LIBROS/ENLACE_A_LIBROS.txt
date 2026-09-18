@@ -1,0 +1,5 @@
+Los libros completos para la prueba de carga (>50MB) se encuentran disponibles en el siguiente enlace de Google Drive:
+
+https://drive.google.com/drive/folders/1gEC6KLn3oFBiRPm80rklm6VJlz2j_W22?usp=drive_link
+
+Por favor descargue los archivos y colóquelos en esta carpeta (LIBROS) antes de ejecutar el programa.
