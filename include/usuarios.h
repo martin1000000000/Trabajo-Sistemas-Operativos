@@ -16,10 +16,10 @@ void listarUsuarios(ListaUsuarios& listaUsuarios, const string& archivoUsuarios)
 // Elimina un usuario por ID (con alerta si es ADMIN)
 void eliminarUsuario(ListaUsuarios& listaUsuarios, const string& archivoUsuarios);
 
-// Carga usuarios desde el archivo TXT a la lista en memoria
+// Carga usuarios desde el archivo binario (.DAT) a la lista en memoria
 void cargarUsuariosDesdeArchivo(ListaUsuarios& listaUsuarios, const string& archivoUsuarios);
 
-// Guarda toda la lista de usuarios al archivo TXT (reescribe completo)
+// Guarda toda la lista de usuarios al archivo binario (.DAT) (reescribe completo)
 void guardarUsuariosEnArchivo(ListaUsuarios& listaUsuarios, const string& archivoUsuarios);
 
 #endif // USUARIOS_H

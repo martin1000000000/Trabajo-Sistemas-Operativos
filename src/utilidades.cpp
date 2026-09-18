@@ -63,6 +63,26 @@ int leerEntero(const string& mensaje) {
     }
 }
 
+// ─── Leer un número real con validación ───────────────────
+double leerReal(const string& mensaje) {
+    string linea;
+    double valor;
+    while (true) {
+        cout << mensaje;
+        if (!getline(cin, linea)) {
+            return 0.0;
+        }
+
+        stringstream ss(linea);
+        char sobrante;
+        if ((ss >> valor) && !(ss >> sobrante)) {
+            return valor;
+        }
+
+        cout << "[ERROR] Debe ingresar un numero real." << endl;
+    }
+}
+
 // ─── Limpiar pantalla ─────────────────────────────────────
 void limpiarPantalla() {
     #ifdef _WIN32

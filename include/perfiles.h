@@ -16,10 +16,10 @@ void listarPerfiles(ListaPerfiles& listaPerfiles, const string& archivoPerfiles)
 // Elimina un perfil por nombre
 void eliminarPerfil(ListaPerfiles& listaPerfiles, const string& archivoPerfiles);
 
-// Carga perfiles desde el archivo TXT a la lista en memoria
+// Carga perfiles desde el archivo binario (.DAT) a la lista en memoria
 void cargarPerfilesDesdeArchivo(ListaPerfiles& listaPerfiles, const string& archivoPerfiles);
 
-// Guarda toda la lista de perfiles al archivo TXT (reescribe completo)
+// Guarda toda la lista de perfiles al archivo binario (.DAT) (reescribe completo)
 void guardarPerfilesEnArchivo(const ListaPerfiles& listaPerfiles, const string& archivoPerfiles);
 
 #endif // PERFILES_H

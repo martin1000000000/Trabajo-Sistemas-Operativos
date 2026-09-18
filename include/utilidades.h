@@ -10,6 +10,9 @@ string leerVariableEnv(const string& nombreVariable);
 // Valida que la entrada sea un número entero
 int leerEntero(const string& mensaje);
 
+// Valida que la entrada sea un número real (double)
+double leerReal(const string& mensaje);
+
 // Limpia la pantalla de consola (multiplataforma)
 void limpiarPantalla();
 

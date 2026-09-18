@@ -100,10 +100,12 @@ int main(int argc, char* argv[]) {
     // ─── 1. Leer variables de entorno desde .env ──────────
     string archivoUsuarios = leerVariableEnv("USER_FILE");
     string archivoPerfiles = leerVariableEnv("PERFIL_FILE");
+    string multiplicadorExe = leerVariableEnv("MULTIPLICADOR_EXE");
 
     // Asumir .DAT porque usamos modo binario
     if (archivoUsuarios.empty()) archivoUsuarios = "USUARIOS.DAT";
     if (archivoPerfiles.empty()) archivoPerfiles = "PERFILES.DAT";
+    if (multiplicadorExe.empty()) multiplicadorExe = "multiplicador.exe";
 
     // ─── 2. Cargar datos desde archivos a memoria ─────────
     ListaUsuarios listaUsuarios;
@@ -214,7 +216,7 @@ int main(int argc, char* argv[]) {
                 cout << "Ingrese separador (ej. '#'): ";
                 getline(cin, sep);
                 
-                string cmd = "multiplicador.exe \"" + rutaA + "\" \"" + rutaB + "\" \"" + sep + "\"";
+                string cmd = multiplicadorExe + " \"" + rutaA + "\" \"" + rutaB + "\" \"" + sep + "\" \"" + loggedName + "\" \"" + loggedProfile + "\"";
                 cout << "Ejecutando: " << cmd << endl;
                 system(cmd.c_str());
                 pausar();
@@ -238,21 +240,32 @@ int main(int argc, char* argv[]) {
                 break;
             }
             case 5: {
-                cout << "Calcular f(x) = x*x + 2x + 8" << endl;
-                double x;
-                cout << "Ingrese el valor de X: ";
-                cin >> x;
-                // limpiar buffer
-                cin.ignore(10000, '\n');
-                double res = (x * x) + (2 * x) + 8;
-                cout << "f(" << x << ") = " << res << endl;
-                pausar();
+                int optF;
+                do {
+                    limpiarPantalla();
+                    cout << "===================================" << endl;
+                    cout << "  Calcular f(x) = x*x + 2x + 8" << endl;
+                    cout << "===================================" << endl;
+                    cout << "  1) Ingresar X y calcular" << endl;
+                    cout << "  0) VOLVER" << endl;
+                    cout << "===================================" << endl;
+                    optF = leerEntero("Opcion: ");
+                    if (optF == 1) {
+                        double x = leerReal("Ingrese el valor de X: ");
+                        double res = (x * x) + (2 * x) + 8;
+                        cout << "f(" << x << ") = " << res << endl;
+                        pausar();
+                    }
+                } while (optF != 0);
                 break;
             }
             case 6: {
                 cout << "Conteo sobre archivo de parametro: " << argFile << endl;
                 conteoTexto(argFile);
-                pausar();
+                int volver;
+                do {
+                    volver = leerEntero("[0] VOLVER: ");
+                } while (volver != 0);
                 break;
             }
             case 7: {
@@ -260,7 +273,10 @@ int main(int argc, char* argv[]) {
                 cout << "Ingrese path del archivo: ";
                 getline(cin, path);
                 conteoTexto(path);
-                pausar();
+                int volver;
+                do {
+                    volver = leerEntero("[0] VOLVER: ");
+                } while (volver != 0);
                 break;
             }
             case 0:
