@@ -225,10 +225,10 @@ void eliminarUsuario(ListaUsuarios& listaUsuarios, const string& archivoUsuarios
     // Alerta si es ADMIN
     if (strcmp(u.perfil, "ADMIN") == 0) {
         cout << endl;
-        cout << "╔══════════════════════════════════════════════╗" << endl;
-        cout << "║  [ADVERTENCIA] Este usuario tiene perfil     ║" << endl;
-        cout << "║  ADMIN. Eliminarlo puede afectar el sistema. ║" << endl;
-        cout << "╚══════════════════════════════════════════════╝" << endl;
+        cout << "================================================" << endl;
+        cout << "|  [ADVERTENCIA] Este usuario tiene perfil     |" << endl;
+        cout << "|  ADMIN. Eliminarlo puede afectar el sistema. |" << endl;
+        cout << "================================================" << endl;
     }
 
     // Confirmar eliminación

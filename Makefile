@@ -19,7 +19,7 @@ $(TARGET_MULTI): $(SRC_MULTI)
 
 # Compilar y ejecutar
 run: $(TARGET_MAIN)
-	./$(TARGET_MAIN) -u admin -p 123 -f prueba.txt
+	./$(TARGET_MAIN) -u PorDefecto -p 123 -f El_Mundo_de_Sofia.txt
 
 # Limpiar ejecutable
 clean:

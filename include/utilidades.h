@@ -19,4 +19,10 @@ void limpiarPantalla();
 // Pausa la consola hasta que el usuario presione Enter
 void pausar();
 
+// Función auxiliar para contar en un archivo
+void conteoTexto(const string& filename);
+
+// Verifica si un string es palíndromo
+bool esPalindromo(const string& str);
+
 #endif // UTILIDADES_H
