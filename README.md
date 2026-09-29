@@ -45,3 +45,4 @@ Un motor unificado lee archivos de texto de cualquier tamaño, contando palabras
 El sistema lee las rutas maestras de su base de datos desde un archivo `.env` ubicado en la raíz.
 - `USER_FILE=USUARIOS.DAT`: Define el archivo binario principal de usuarios.
 - `PERFIL_FILE=PERFILES.DAT`: Define el archivo binario principal de perfiles.
+- `MULTIPLICADOR_EXE=multiplicador.exe`: Define el nombre/ruta del subprograma externo que multiplica matrices (Opción 2).

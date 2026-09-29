@@ -3,6 +3,7 @@
 #include <vector>
 #include <string>
 #include <sstream>
+#include <stdexcept>
 
 using namespace std;
 
@@ -15,7 +16,9 @@ bool leerMatriz(const string& ruta, const string& separador, vector<vector<doubl
     }
 
     string linea;
+    int numLinea = 0;
     while (getline(file, linea)) {
+        numLinea++;
         if (linea.empty()) continue;
         
         vector<double> fila;
@@ -26,12 +29,22 @@ bool leerMatriz(const string& ruta, const string& separador, vector<vector<doubl
         while ((pos = linea.find(separador)) != string::npos) {
             token = linea.substr(0, pos);
             if (!token.empty()) {
-                fila.push_back(stod(token));
+                try {
+                    fila.push_back(stod(token));
+                } catch (const exception&) {
+                    cout << "[ERROR] Valor no numerico '" << token << "' en la linea " << numLinea << " del archivo " << ruta << "." << endl;
+                    return false;
+                }
             }
             linea.erase(0, pos + separador.length());
         }
         if (!linea.empty()) {
-            fila.push_back(stod(linea));
+            try {
+                fila.push_back(stod(linea));
+            } catch (const exception&) {
+                cout << "[ERROR] Valor no numerico '" << linea << "' en la linea " << numLinea << " del archivo " << ruta << "." << endl;
+                return false;
+            }
         }
         
         if (!fila.empty()) {
@@ -42,19 +55,27 @@ bool leerMatriz(const string& ruta, const string& separador, vector<vector<doubl
 }
 
 int main(int argc, char* argv[]) {
-    // Argumentos esperados: rutaA rutaB separador
-    if (argc < 4) {
+    // Argumentos esperados: rutaA rutaB separador usuario perfil
+    if (argc < 6) {
         cout << "[ERROR Multiplicador] Argumentos insuficientes." << endl;
-        cout << "Uso: multiplicador.exe <rutaA> <rutaB> <separador>" << endl;
+        cout << "Uso: multiplicador.exe <rutaA> <rutaB> <separador> <usuario> <perfil>" << endl;
         return 1;
     }
 
     string rutaA = argv[1];
     string rutaB = argv[2];
     string separador = argv[3];
+    string usuario = argv[4];
+    string perfil = argv[5];
+
+    if (separador.empty()) {
+        cout << "[ERROR] El separador no puede estar vacio." << endl;
+        return 1;
+    }
 
     cout << "\n======================================" << endl;
     cout << "  PROGRAMA MULTIPLICADOR DE MATRICES" << endl;
+    cout << "  Usuario: " << usuario << " | Perfil: " << perfil << endl;
     cout << "======================================" << endl;
 
     vector<vector<double>> A;

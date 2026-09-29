@@ -11,68 +11,6 @@
 
 using namespace std;
 
-// Función auxiliar para contar en un archivo
-void conteoTexto(const string& filename) {
-    ifstream file(filename);
-    if (!file.is_open()) {
-        cout << "[ERROR] No se pudo abrir el archivo: " << filename << endl;
-        return;
-    }
-
-    int vocales = 0, consonantes = 0, especiales = 0, palabras = 0;
-    char c;
-    bool inWord = false;
-
-    while (file.get(c)) {
-        if (isalpha(c)) {
-            char lower_c = tolower(c);
-            if (lower_c == 'a' || lower_c == 'e' || lower_c == 'i' || lower_c == 'o' || lower_c == 'u') {
-                vocales++;
-            } else {
-                consonantes++;
-            }
-            if (!inWord) {
-                palabras++;
-                inWord = true;
-            }
-        } else {
-            if (isspace(c)) {
-                inWord = false;
-            } else {
-                especiales++;
-                if (!inWord) {
-                    palabras++; // Algunas reglas cuentan símbolos sueltos como palabras. Ajustado según sea necesario.
-                    inWord = true;
-                }
-            }
-        }
-    }
-    
-    cout << "--- Resultados Conteo ---" << endl;
-    cout << "Vocales: " << vocales << endl;
-    cout << "Consonantes: " << consonantes << endl;
-    cout << "Caracteres especiales: " << especiales << endl;
-    cout << "Palabras: " << palabras << endl;
-    cout << "-------------------------" << endl;
-}
-
-bool esPalindromo(const string& str) {
-    string cleaned = "";
-    for (char c : str) {
-        if (isalnum(c)) {
-            cleaned += tolower(c);
-        }
-    }
-    int i = 0;
-    int j = cleaned.length() - 1;
-    while (i < j) {
-        if (cleaned[i] != cleaned[j]) return false;
-        i++;
-        j--;
-    }
-    return true;
-}
-
 int main(int argc, char* argv[]) {
     string argUser = "";
     string argPass = "";
@@ -100,10 +38,12 @@ int main(int argc, char* argv[]) {
     // ─── 1. Leer variables de entorno desde .env ──────────
     string archivoUsuarios = leerVariableEnv("USER_FILE");
     string archivoPerfiles = leerVariableEnv("PERFIL_FILE");
+    string multiplicadorExe = leerVariableEnv("MULTIPLICADOR_EXE");
 
     // Asumir .DAT porque usamos modo binario
     if (archivoUsuarios.empty()) archivoUsuarios = "USUARIOS.DAT";
     if (archivoPerfiles.empty()) archivoPerfiles = "PERFILES.DAT";
+    if (multiplicadorExe.empty()) multiplicadorExe = "multiplicador.exe";
 
     // ─── 2. Cargar datos desde archivos a memoria ─────────
     ListaUsuarios listaUsuarios;
@@ -126,10 +66,17 @@ int main(int argc, char* argv[]) {
         }
     }
 
+    // Descomentar las siguientes lineas para forzar el ingreso como ADMIN
+    // en caso de que la base de datos (archivos .DAT) haya sido eliminada:
+    // validLogin = true;
+    // loggedProfile = "ADMIN";
+    // loggedName = "Admin_Default";
+
     // Comentar estas lineas para probar rapidamente si no tienes base de datos cargada:
     if (!validLogin) {
         cout << "[ERROR] Credenciales invalidas para el usuario '" << argUser << "'." << endl;
         return 1;
+        
     }
 
     // Cargar permisos del perfil
@@ -214,7 +161,7 @@ int main(int argc, char* argv[]) {
                 cout << "Ingrese separador (ej. '#'): ";
                 getline(cin, sep);
                 
-                string cmd = "multiplicador.exe \"" + rutaA + "\" \"" + rutaB + "\" \"" + sep + "\"";
+                string cmd = multiplicadorExe + " \"" + rutaA + "\" \"" + rutaB + "\" \"" + sep + "\" \"" + loggedName + "\" \"" + loggedProfile + "\"";
                 cout << "Ejecutando: " << cmd << endl;
                 system(cmd.c_str());
                 pausar();
@@ -238,21 +185,32 @@ int main(int argc, char* argv[]) {
                 break;
             }
             case 5: {
-                cout << "Calcular f(x) = x*x + 2x + 8" << endl;
-                double x;
-                cout << "Ingrese el valor de X: ";
-                cin >> x;
-                // limpiar buffer
-                cin.ignore(10000, '\n');
-                double res = (x * x) + (2 * x) + 8;
-                cout << "f(" << x << ") = " << res << endl;
-                pausar();
+                int optF;
+                do {
+                    limpiarPantalla();
+                    cout << "===================================" << endl;
+                    cout << "  Calcular f(x) = x*x + 2x + 8" << endl;
+                    cout << "===================================" << endl;
+                    cout << "  1) Ingresar X y calcular" << endl;
+                    cout << "  0) VOLVER" << endl;
+                    cout << "===================================" << endl;
+                    optF = leerEntero("Opcion: ");
+                    if (optF == 1) {
+                        double x = leerReal("Ingrese el valor de X: ");
+                        double res = (x * x) + (2 * x) + 8;
+                        cout << "f(" << x << ") = " << res << endl;
+                        pausar();
+                    }
+                } while (optF != 0);
                 break;
             }
             case 6: {
                 cout << "Conteo sobre archivo de parametro: " << argFile << endl;
                 conteoTexto(argFile);
-                pausar();
+                int volver;
+                do {
+                    volver = leerEntero("[0] VOLVER: ");
+                } while (volver != 0);
                 break;
             }
             case 7: {
@@ -260,7 +218,10 @@ int main(int argc, char* argv[]) {
                 cout << "Ingrese path del archivo: ";
                 getline(cin, path);
                 conteoTexto(path);
-                pausar();
+                int volver;
+                do {
+                    volver = leerEntero("[0] VOLVER: ");
+                } while (volver != 0);
                 break;
             }
             case 0:
