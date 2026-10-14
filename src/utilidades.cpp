@@ -161,3 +161,42 @@ bool esPalindromo(const string& str) {
     }
     return true;
 }
+
+// ─── Obtener variable desde getenv() o .env ───────────────
+string obtenerVariableEnvOConfig(const string& nombreVariable, const string& valorDefecto) {
+    const char* envVal = getenv(nombreVariable.c_str());
+    if (envVal != nullptr && string(envVal).length() > 0) {
+        return string(envVal);
+    }
+    string val = leerVariableEnv(nombreVariable);
+    if (!val.empty()) {
+        return val;
+    }
+    return valorDefecto;
+}
+
+// ─── Validar variable de entorno como entero ──────────────
+bool validarVariableEntero(const string& nombreVariable, int& salida, int minimo, int maximo) {
+    string valStr = obtenerVariableEnvOConfig(nombreVariable, "");
+    if (valStr.empty()) {
+        cout << "[ERROR] Variable de entorno '" << nombreVariable << "' no esta definida." << endl;
+        return false;
+    }
+    try {
+        size_t idx = 0;
+        int num = stoi(valStr, &idx);
+        if (idx != valStr.size()) {
+            cout << "[ERROR] Variable '" << nombreVariable << "' ('" << valStr << "') tiene formato numerico invalido." << endl;
+            return false;
+        }
+        if (num < minimo || num > maximo) {
+            cout << "[ERROR] Variable '" << nombreVariable << "' debe estar entre " << minimo << " y " << maximo << " (recibido: " << num << ")." << endl;
+            return false;
+        }
+        salida = num;
+        return true;
+    } catch (...) {
+        cout << "[ERROR] Variable '" << nombreVariable << "' ('" << valStr << "') no es un entero valido." << endl;
+        return false;
+    }
+}
