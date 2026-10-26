@@ -147,12 +147,17 @@ void crearIndiceInvertidoParalelo() {
     cout << "  CREACION PARALELA DE INDICE INVERTIDO" << endl;
     cout << "==========================================" << endl;
 
-    // 1. Obtener y validar variables de entorno
-    string carpetaLibros = obtenerVariableEnvOConfig("LIBROS_DIR", "LIBROS");
-    string archivoSalida = obtenerVariableEnvOConfig("INDICE_FILE", "indice_invertido.idx");
-    string archivoMapa = obtenerVariableEnvOConfig("MAPA_LIBROS_FILE", "mapa_libros.txt");
-    
-    int nThreads = 4;
+    // 1. Obtener y validar variables de entorno (sin nombres hardcodeados en código)
+    string carpetaLibros = obtenerVariableEnvOConfig("LIBROS_DIR");
+    string archivoSalida = obtenerVariableEnvOConfig("INDICE_FILE");
+    string archivoMapa = obtenerVariableEnvOConfig("MAPA_LIBROS_FILE");
+
+    if (carpetaLibros.empty() || archivoSalida.empty() || archivoMapa.empty()) {
+        cout << "[ERROR] Faltan variables de entorno requeridas (LIBROS_DIR, INDICE_FILE o MAPA_LIBROS_FILE). Abortando." << endl;
+        return;
+    }
+
+    int nThreads = 0;
     if (!validarVariableEntero("N_THREADS", nThreads, 1, 64)) {
         cout << "[ERROR] La variable N_THREADS es invalida o no esta definida. Abortando." << endl;
         return;

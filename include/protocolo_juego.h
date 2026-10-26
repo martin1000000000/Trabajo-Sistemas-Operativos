@@ -3,10 +3,6 @@
 
 #include <string>
 
-// Puerto y host por defecto para el juego por sockets
-#define DEFAULT_GAME_HOST "127.0.0.1"
-#define DEFAULT_GAME_PORT 8080
-
 // Comandos de comunicación
 namespace Protocolo {
     const std::string CMD_CONECTAR   = "CONECTAR";

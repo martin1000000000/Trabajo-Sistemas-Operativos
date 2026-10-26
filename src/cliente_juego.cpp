@@ -156,10 +156,13 @@ int main(int argc, char* argv[]) {
     cout << "   CLIENTE DE JUEGO MULTIPLAYER (SOCKETS)" << endl;
     cout << "==========================================" << endl;
 
-    // 1. Configuración de Host y Puerto
-    string host = obtenerVariableEnvOConfig("GAME_HOST", DEFAULT_GAME_HOST);
-    int puerto = DEFAULT_GAME_PORT;
-    validarVariableEntero("GAME_PORT", puerto, 1024, 65535);
+    // 1. Configuración y validación de Host y Puerto desde variables de entorno
+    string host = obtenerVariableEnvOConfig("GAME_HOST");
+    int puerto = 0;
+    if ((argc < 4 && host.empty()) || (argc < 5 && !validarVariableEntero("GAME_PORT", puerto, 1024, 65535))) {
+        cout << "[ERROR] Las variables de entorno GAME_HOST o GAME_PORT no estan definidas o son invalidas." << endl;
+        return 1;
+    }
 
     string nombreJugador = "";
     string equipoElegido = "";

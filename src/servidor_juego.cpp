@@ -35,13 +35,13 @@ static mutex g_mutexLog;
 static vector<shared_ptr<Jugador>> g_jugadores;
 static int g_posEquipoA = 0;
 static int g_posEquipoB = 0;
-static int g_metaTablero = 50;
-static int g_carasDado = 6;
+static int g_metaTablero = 0;
+static int g_carasDado = 0;
 static bool g_partidaIniciada = false;
 static bool g_partidaFinalizada = false;
 static size_t g_indiceTurno = 0;
 
-static string g_archivoLog = "juego.log";
+static string g_archivoLog = "";
 static mt19937 g_rng(static_cast<unsigned int>(chrono::system_clock::now().time_since_epoch().count()));
 
 // ─── Función de Registro de Log ──────────────────────────
@@ -345,18 +345,23 @@ int main() {
     cout << "  SERVIDOR DE JUEGO MULTIPLAYER (SOCKETS)" << endl;
     cout << "==========================================" << endl;
 
-    // 1. Leer variables de entorno
-    g_archivoLog = obtenerVariableEnvOConfig("GAME_LOG", "juego.log");
-    
-    int puerto = DEFAULT_GAME_PORT;
-    validarVariableEntero("GAME_PORT", puerto, 1024, 65535);
+    // 1. Leer y validar variables de entorno (sin nombres ni valores hardcodeados)
+    g_archivoLog = obtenerVariableEnvOConfig("GAME_LOG");
+    if (g_archivoLog.empty()) {
+        cout << "[ERROR] La variable de entorno GAME_LOG no esta definida. Abortando." << endl;
+        return 1;
+    }
 
-    int metaX = 50;
-    validarVariableEntero("TABLERO_X", metaX, 10, 1000);
+    int puerto = 0;
+    int metaX = 0;
+    int carasR = 0;
+    if (!validarVariableEntero("GAME_PORT", puerto, 1024, 65535) ||
+        !validarVariableEntero("TABLERO_X", metaX, 10, 1000) ||
+        !validarVariableEntero("DADO_R", carasR, 2, 100)) {
+        cout << "[ERROR] Variables de entorno del juego invalidas o faltantes. Abortando." << endl;
+        return 1;
+    }
     g_metaTablero = metaX;
-
-    int carasR = 6;
-    validarVariableEntero("DADO_R", carasR, 2, 100);
     g_carasDado = carasR;
 
     cout << "[CONFIG] Archivo de Log: " << g_archivoLog << endl;
