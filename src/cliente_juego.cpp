@@ -5,8 +5,19 @@
 #include <atomic>
 #include <chrono>
 
+#ifdef _WIN32
 #include <winsock2.h>
 #include <ws2tcpip.h>
+#else
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
+#include <unistd.h>
+typedef int SOCKET;
+#define INVALID_SOCKET (-1)
+#define SOCKET_ERROR (-1)
+#define closesocket close
+#endif
 
 #include "protocolo_juego.h"
 #include "utilidades.h"
@@ -191,32 +202,38 @@ int main(int argc, char* argv[]) {
         else equipoElegido = "AUTO";
     }
 
+#ifdef _WIN32
     // 2. Inicializar Winsock
     WSADATA wsaData;
     if (WSAStartup(MAKEWORD(2, 2), &wsaData) != 0) {
         cout << "[ERROR] Fallo al inicializar Winsock." << endl;
         return 1;
     }
+#endif
 
     // 3. Crear Socket y Conectar
     SOCKET sock = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
     if (sock == INVALID_SOCKET) {
         cout << "[ERROR] No se pudo crear socket." << endl;
+#ifdef _WIN32
         WSACleanup();
+#endif
         return 1;
     }
 
-    sockaddr_in serverAddr;
+    sockaddr_in serverAddr{};
     serverAddr.sin_family = AF_INET;
-    serverAddr.sin_port = htons(static_cast<u_short>(puerto));
+    serverAddr.sin_port = htons(static_cast<uint16_t>(puerto));
     inet_pton(AF_INET, host.c_str(), &(serverAddr.sin_addr));
 
     cout << "\n[INFO] Conectando a " << host << ":" << puerto << "..." << endl;
     if (connect(sock, reinterpret_cast<sockaddr*>(&serverAddr), sizeof(serverAddr)) == SOCKET_ERROR) {
         cout << "[ERROR] No se pudo conectar al servidor en " << host << ":" << puerto << "." << endl;
-        cout << "[TIP] Asegurese de iniciar primero 'servidor_juego.exe'." << endl;
+        cout << "[TIP] Asegurese de iniciar primero 'servidor_juego'." << endl;
         closesocket(sock);
+#ifdef _WIN32
         WSACleanup();
+#endif
         return 1;
     }
 
@@ -232,7 +249,7 @@ int main(int argc, char* argv[]) {
     // 5. Bucle de entrada del usuario en consola
     while (g_conectado) {
         string entrada;
-        getline(cin, entrada);
+        if (!getline(cin, entrada)) break;
 
         if (!g_conectado) break;
 
@@ -258,7 +275,9 @@ int main(int argc, char* argv[]) {
     if (receptor.joinable()) {
         receptor.join();
     }
+#ifdef _WIN32
     WSACleanup();
+#endif
 
     cout << "\nGracias por jugar. Hasta luego!" << endl;
     return 0;

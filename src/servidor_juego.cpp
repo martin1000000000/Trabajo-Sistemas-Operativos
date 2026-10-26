@@ -12,8 +12,20 @@
 #include <random>
 #include <algorithm>
 
+#ifdef _WIN32
 #include <winsock2.h>
 #include <ws2tcpip.h>
+typedef int socklen_t;
+#else
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
+#include <unistd.h>
+typedef int SOCKET;
+#define INVALID_SOCKET (-1)
+#define SOCKET_ERROR (-1)
+#define closesocket close
+#endif
 
 #include "protocolo_juego.h"
 #include "utilidades.h"
@@ -52,7 +64,11 @@ static void registrarLog(const string& jugador, const string& equipo, const stri
     auto ahora = chrono::system_clock::now();
     time_t tiempoT = chrono::system_clock::to_time_t(ahora);
     tm tmInfo;
+#ifdef _WIN32
     localtime_s(&tmInfo, &tiempoT);
+#else
+    localtime_r(&tiempoT, &tmInfo);
+#endif
 
     stringstream ssFecha;
     ssFecha << put_time(&tmInfo, "%Y-%m-%d %H:%M:%S");
@@ -209,17 +225,19 @@ static void atenderCliente(SOCKET sockCliente) {
 
                 lock_guard<mutex> lock(g_mutexJuego);
 
-                // Validar si el nombre ya existe
-                bool existe = false;
-                for (const auto& j : g_jugadores) {
-                    if (j->activo && j->nombre == nombre) {
-                        existe = true;
-                        break;
+                // Si el nombre ya existe (ej. varios clientes con 'PorDefecto'), asignar sufijo único
+                string nombreBase = nombre;
+                int sufijo = 2;
+                while (true) {
+                    bool existe = false;
+                    for (const auto& j : g_jugadores) {
+                        if (j->activo && j->nombre == nombre) {
+                            existe = true;
+                            break;
+                        }
                     }
-                }
-                if (existe) {
-                    enviarMensaje(sockCliente, "ERROR|El nombre '" + nombre + "' ya esta en uso. Elige otro.");
-                    continue;
+                    if (!existe) break;
+                    nombre = nombreBase + "_" + to_string(sufijo++);
                 }
 
                 // Asignar equipo
@@ -370,41 +388,49 @@ int main() {
     cout << "[CONFIG] Caras del Dado: " << g_carasDado << endl;
     cout << "------------------------------------------" << endl;
 
+#ifdef _WIN32
     // 2. Inicializar Winsock
     WSADATA wsaData;
     if (WSAStartup(MAKEWORD(2, 2), &wsaData) != 0) {
         cout << "[ERROR] Fallo al inicializar Winsock." << endl;
         return 1;
     }
+#endif
 
     // 3. Crear socket de escucha
     SOCKET serverSocket = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
     if (serverSocket == INVALID_SOCKET) {
         cout << "[ERROR] No se pudo crear socket servidor." << endl;
+#ifdef _WIN32
         WSACleanup();
+#endif
         return 1;
     }
 
     // Reutilización de dirección
     int opt = 1;
-    setsockopt(serverSocket, SOL_SOCKET, SO_REUSEADDR, reinterpret_cast<char*>(&opt), sizeof(opt));
+    setsockopt(serverSocket, SOL_SOCKET, SO_REUSEADDR, reinterpret_cast<const char*>(&opt), sizeof(opt));
 
-    sockaddr_in serverAddr;
+    sockaddr_in serverAddr{};
     serverAddr.sin_family = AF_INET;
     serverAddr.sin_addr.s_addr = INADDR_ANY;
-    serverAddr.sin_port = htons(static_cast<u_short>(puerto));
+    serverAddr.sin_port = htons(static_cast<uint16_t>(puerto));
 
     if (bind(serverSocket, reinterpret_cast<sockaddr*>(&serverAddr), sizeof(serverAddr)) == SOCKET_ERROR) {
         cout << "[ERROR] Fallo al enlazar socket al puerto " << puerto << "." << endl;
         closesocket(serverSocket);
+#ifdef _WIN32
         WSACleanup();
+#endif
         return 1;
     }
 
     if (listen(serverSocket, SOMAXCONN) == SOCKET_ERROR) {
         cout << "[ERROR] Fallo en listen." << endl;
         closesocket(serverSocket);
+#ifdef _WIN32
         WSACleanup();
+#endif
         return 1;
     }
 
@@ -415,8 +441,8 @@ int main() {
     vector<thread> hilosClientes;
 
     while (true) {
-        sockaddr_in clientAddr;
-        int clientSize = sizeof(clientAddr);
+        sockaddr_in clientAddr{};
+        socklen_t clientSize = sizeof(clientAddr);
         SOCKET clientSocket = accept(serverSocket, reinterpret_cast<sockaddr*>(&clientAddr), &clientSize);
 
         if (clientSocket == INVALID_SOCKET) {
@@ -437,7 +463,9 @@ int main() {
     for (auto& t : hilosClientes) {
         if (t.joinable()) t.join();
     }
+#ifdef _WIN32
     WSACleanup();
+#endif
 
     return 0;
 }

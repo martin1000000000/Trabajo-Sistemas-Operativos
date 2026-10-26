@@ -1,7 +1,12 @@
-# ─── Makefile SistOpe (Entrega 3) ───────────────────────────
+# ─── Makefile SistOpe (Entrega 3 - Multiplataforma Windows / Linux WSL) ───
 CXX      = g++
 CXXFLAGS = -Wall -std=c++17 -Iinclude -pthread
-LDFLAGS  = -lws2_32
+
+ifeq ($(OS),Windows_NT)
+    LDFLAGS = -lws2_32
+else
+    LDFLAGS =
+endif
 
 # 1. Programa Principal SistOpe (con indice invertido paralelo)
 SRC_MAIN    = src/main.cpp src/utilidades.cpp src/usuarios.cpp src/perfiles.cpp src/indice.cpp
@@ -36,7 +41,7 @@ $(TARGET_CLIENT): $(SRC_CLIENT)
 
 # Compilar y ejecutar programa principal
 run: $(TARGET_MAIN)
-	./$(TARGET_MAIN) -u PorDefecto -p 123 -f El_Mundo_de_Sofia.txt
+	./$(TARGET_MAIN) -u PorDefecto -p 123 -f A.TXT
 
 # Limpiar ejecutables
 ifeq ($(OS),Windows_NT)
