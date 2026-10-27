@@ -51,7 +51,6 @@ static int g_metaTablero = 0;
 static int g_carasDado = 0;
 static bool g_partidaIniciada = false;
 static bool g_partidaFinalizada = false;
-static size_t g_indiceTurno = 0;
 
 static string g_archivoLog = "";
 static mt19937 g_rng(static_cast<unsigned int>(chrono::system_clock::now().time_since_epoch().count()));
@@ -104,43 +103,59 @@ static void broadcast(const string& mensaje) {
     }
 }
 
-// ─── Obtener siguiente jugador activo alternando equipos ───
-static string g_ultimoEquipoTurno = "";
+// ─── Control de Turnos por Equipos (Round-Robin Alternado) ───
+static shared_ptr<Jugador> g_jugadorEnTurno = nullptr;
+static string g_proximoEquipo = "EquipoA";
+static size_t g_idxRotacionA = 0;
+static size_t g_idxRotacionB = 0;
+
+static vector<shared_ptr<Jugador>> obtenerActivosEquipo(const string& equipo) {
+    vector<shared_ptr<Jugador>> res;
+    for (const auto& j : g_jugadores) {
+        if (j->activo && j->equipo == equipo) {
+            res.push_back(j);
+        }
+    }
+    return res;
+}
 
 static shared_ptr<Jugador> obtenerSiguienteTurno() {
-    if (g_jugadores.empty()) return nullptr;
+    auto activosA = obtenerActivosEquipo("EquipoA");
+    auto activosB = obtenerActivosEquipo("EquipoB");
 
-    string equipoBuscado = (g_ultimoEquipoTurno == "EquipoA") ? "EquipoB" : "EquipoA";
-    size_t total = g_jugadores.size();
-
-    // 1. Priorizar encontrar el siguiente jugador activo del equipo contrario
-    for (size_t i = 1; i <= total; ++i) {
-        size_t idx = (g_indiceTurno + i) % total;
-        if (g_jugadores[idx]->activo && g_jugadores[idx]->equipo == equipoBuscado) {
-            g_indiceTurno = idx;
-            g_ultimoEquipoTurno = equipoBuscado;
-            return g_jugadores[idx];
-        }
+    if (activosA.empty() && activosB.empty()) {
+        g_jugadorEnTurno = nullptr;
+        return nullptr;
     }
 
-    // 2. Si el otro equipo no tiene jugadores activos, buscar cualquier jugador activo
-    for (size_t i = 1; i <= total; ++i) {
-        size_t idx = (g_indiceTurno + i) % total;
-        if (g_jugadores[idx]->activo) {
-            g_indiceTurno = idx;
-            g_ultimoEquipoTurno = g_jugadores[idx]->equipo;
-            return g_jugadores[idx];
-        }
+    // Determinar qué equipo debe jugar (alternando, a menos que un equipo no tenga activos)
+    string equipoElegido = g_proximoEquipo;
+    if (equipoElegido == "EquipoA" && activosA.empty()) {
+        equipoElegido = "EquipoB";
+    } else if (equipoElegido == "EquipoB" && activosB.empty()) {
+        equipoElegido = "EquipoA";
     }
-    return nullptr;
+
+    if (equipoElegido == "EquipoA") {
+        if (g_idxRotacionA >= activosA.size()) g_idxRotacionA = 0;
+        g_jugadorEnTurno = activosA[g_idxRotacionA];
+        g_idxRotacionA = (g_idxRotacionA + 1) % activosA.size();
+        g_proximoEquipo = "EquipoB";
+    } else {
+        if (g_idxRotacionB >= activosB.size()) g_idxRotacionB = 0;
+        g_jugadorEnTurno = activosB[g_idxRotacionB];
+        g_idxRotacionB = (g_idxRotacionB + 1) % activosB.size();
+        g_proximoEquipo = "EquipoA";
+    }
+
+    return g_jugadorEnTurno;
 }
 
 static shared_ptr<Jugador> obtenerTurnoActual() {
-    if (g_jugadores.empty()) return nullptr;
-    if (g_indiceTurno < g_jugadores.size() && g_jugadores[g_indiceTurno]->activo) {
-        return g_jugadores[g_indiceTurno];
+    if (!g_jugadorEnTurno || !g_jugadorEnTurno->activo) {
+        return obtenerSiguienteTurno();
     }
-    return obtenerSiguienteTurno();
+    return g_jugadorEnTurno;
 }
 
 // ─── Notificar estado del juego ──────────────────────────
@@ -180,7 +195,10 @@ static void verificarCondicionInicio() {
         registrarLog("SISTEMA", "TODOS", "INICIO_PARTIDA", "Tablero=" + to_string(g_metaTablero) + ";Dado=" + to_string(g_carasDado));
         broadcast("INICIO|Comienza la partida! Meta: " + to_string(g_metaTablero) + " casillas.");
         
-        g_indiceTurno = 0;
+        g_proximoEquipo = "EquipoA";
+        g_idxRotacionA = 0;
+        g_idxRotacionB = 0;
+        obtenerSiguienteTurno();
         notificarTurnoYTablero();
     } else {
         string estadoEspera = "Esperando jugadores para iniciar... EquipoA: " + to_string(cantA) + "/2 | EquipoB: " + to_string(cantB) + "/2";
@@ -344,7 +362,8 @@ static void atenderCliente(SOCKET sockCliente) {
             broadcast("INFO|El jugador '" + jugadorActual->nombre + "' se ha desconectado.");
 
             // Si estaba en turno, avanzar al siguiente
-            if (g_partidaIniciada && !g_partidaFinalizada) {
+            if (g_partidaIniciada && !g_partidaFinalizada && g_jugadorEnTurno == jugadorActual) {
+                obtenerSiguienteTurno();
                 notificarTurnoYTablero();
             }
         }

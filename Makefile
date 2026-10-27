@@ -4,25 +4,27 @@ CXXFLAGS = -Wall -std=c++17 -Iinclude -pthread
 
 ifeq ($(OS),Windows_NT)
     LDFLAGS = -lws2_32
+    EXT     = .exe
 else
     LDFLAGS =
+    EXT     =
 endif
 
 # 1. Programa Principal SistOpe (con indice invertido paralelo)
 SRC_MAIN    = src/main.cpp src/utilidades.cpp src/usuarios.cpp src/perfiles.cpp src/indice.cpp
-TARGET_MAIN = SistOpe
+TARGET_MAIN = SistOpe$(EXT)
 
 # 2. Subproceso Multiplicador de Matrices
 SRC_MULTI    = src/multiplicador.cpp
-TARGET_MULTI = multiplicador
+TARGET_MULTI = multiplicador$(EXT)
 
 # 3. Servidor de Juego Multiplayer (Sockets)
 SRC_SERVER    = src/servidor_juego.cpp src/utilidades.cpp
-TARGET_SERVER = servidor_juego
+TARGET_SERVER = servidor_juego$(EXT)
 
 # 4. Cliente de Juego Multiplayer (Sockets)
 SRC_CLIENT    = src/cliente_juego.cpp src/utilidades.cpp
-TARGET_CLIENT = cliente_juego
+TARGET_CLIENT = cliente_juego$(EXT)
 
 # Compilar todo
 all: $(TARGET_MAIN) $(TARGET_MULTI) $(TARGET_SERVER) $(TARGET_CLIENT)
@@ -46,10 +48,10 @@ run: $(TARGET_MAIN)
 # Limpiar ejecutables
 ifeq ($(OS),Windows_NT)
 clean:
-	-cmd /c "del /Q /F $(TARGET_MAIN).exe $(TARGET_MULTI).exe $(TARGET_SERVER).exe $(TARGET_CLIENT).exe 2>nul"
+	-cmd /c "del /Q /F SistOpe SistOpe.exe multiplicador multiplicador.exe servidor_juego servidor_juego.exe cliente_juego cliente_juego.exe 2>nul"
 else
 clean:
-	-rm -f $(TARGET_MAIN) $(TARGET_MAIN).exe $(TARGET_MULTI) $(TARGET_MULTI).exe $(TARGET_SERVER) $(TARGET_SERVER).exe $(TARGET_CLIENT) $(TARGET_CLIENT).exe
+	-rm -f SistOpe SistOpe.exe multiplicador multiplicador.exe servidor_juego servidor_juego.exe cliente_juego cliente_juego.exe
 endif
 
 .PHONY: all run clean

@@ -26,6 +26,7 @@ using namespace std;
 
 static atomic<bool> g_conectado(true);
 static atomic<bool> g_esMiTurno(false);
+static atomic<bool> g_partidaTerminada(false);
 static string g_miNombre = "";
 static string g_miEquipo = "";
 
@@ -147,6 +148,7 @@ static void hiloReceptor(SOCKET sock) {
                 cout << "==========================================" << endl;
                 cout << "Presione [ENTER] para salir..." << endl;
                 g_esMiTurno = false;
+                g_partidaTerminada = true;
 
             } else if (tipo == Protocolo::RESP_ERROR) {
                 string errorMsg;
@@ -252,6 +254,13 @@ int main(int argc, char* argv[]) {
         if (!getline(cin, entrada)) break;
 
         if (!g_conectado) break;
+
+        if (g_partidaTerminada) {
+            string msg = Protocolo::CMD_SALIR + "\n";
+            send(sock, msg.c_str(), static_cast<int>(msg.length()), 0);
+            g_conectado = false;
+            break;
+        }
 
         if (entrada == "salir" || entrada == "exit") {
             string msg = Protocolo::CMD_SALIR + "\n";
