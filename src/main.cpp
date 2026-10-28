@@ -8,6 +8,7 @@
 #include "utilidades.h"
 #include "usuarios.h"
 #include "perfiles.h"
+#include "indice.h"
 
 using namespace std;
 
@@ -44,6 +45,15 @@ int main(int argc, char* argv[]) {
     if (archivoUsuarios.empty()) archivoUsuarios = "USUARIOS.DAT";
     if (archivoPerfiles.empty()) archivoPerfiles = "PERFILES.DAT";
     if (multiplicadorExe.empty()) multiplicadorExe = "multiplicador.exe";
+
+#ifndef _WIN32
+    if (multiplicadorExe.size() > 4 && multiplicadorExe.substr(multiplicadorExe.size() - 4) == ".exe") {
+        multiplicadorExe = multiplicadorExe.substr(0, multiplicadorExe.size() - 4);
+    }
+    if (multiplicadorExe.find('/') == string::npos) {
+        multiplicadorExe = "./" + multiplicadorExe;
+    }
+#endif
 
     // ─── 2. Cargar datos desde archivos a memoria ─────────
     ListaUsuarios listaUsuarios;
@@ -107,6 +117,7 @@ int main(int argc, char* argv[]) {
         cout << "  5) Calcular f(x) = x*x + 2x + 8" << endl;
         cout << "  6) Conteo texto (usar archivo de consola -f)" << endl;
         cout << "  7) Conteo texto (ingresar nueva ruta)" << endl;
+        cout << "  8) Crear indice invertido" << endl;
         cout << "  0) Salir" << endl;
         cout << "===================================" << endl;
 
@@ -116,8 +127,8 @@ int main(int argc, char* argv[]) {
         bool hasPermission = false;
         if (opcion == 0) {
             hasPermission = true;
-        } else if (opcion == 1) {
-            hasPermission = (loggedProfile == "ADMIN");
+        } else if (loggedProfile == "ADMIN") {
+            hasPermission = true; // Perfil ADMIN tiene acceso a todas las opciones del sistema
         } else {
             for (int i = 0; i < numAllowedOptions; i++) {
                 if (allowedOptions[i] == opcion) {
@@ -167,17 +178,42 @@ int main(int argc, char* argv[]) {
                 pausar();
                 break;
             }
-            case 3:
-                cout << "En construccion..." << endl;
+            case 3: {
+                cout << "\n===================================" << endl;
+                cout << "  JUEGO MULTIPLAYER MEDIANTE SOCKETS" << endl;
+                cout << "===================================" << endl;
+                cout << "  1) Conectar como Jugador (Lanzar Cliente)" << endl;
+                cout << "  2) Iniciar Servidor de Juego" << endl;
+                cout << "  0) Volver al menu" << endl;
+                int optJuego = leerEntero("Opcion: ");
+                if (optJuego == 1) {
+#ifdef _WIN32
+                    string cmd = "cliente_juego.exe \"" + loggedName + "\"";
+#else
+                    string cmd = "./cliente_juego \"" + loggedName + "\"";
+#endif
+                    system(cmd.c_str());
+                } else if (optJuego == 2) {
+#ifdef _WIN32
+                    cout << "[INFO] Iniciando servidor de juego en nueva ventana..." << endl;
+                    system("taskkill /F /IM servidor_juego.exe >nul 2>&1 & start servidor_juego.exe");
+#else
+                    cout << "[INFO] Iniciando servidor de juego en segundo plano..." << endl;
+                    system("pkill -x servidor_juego >/dev/null 2>&1; nohup ./servidor_juego >/dev/null 2>&1 &");
+                    system("sleep 1");
+                    cout << "[OK] Servidor de juego activo en el puerto 8080." << endl;
+#endif
+                }
                 pausar();
                 break;
+            }
             case 4: {
-                string text;
-                cout << "Ingrese texto a validar: ";
-                getline(cin, text);
                 cout << "1) Validar  2) Cancelar" << endl;
                 int optPal = leerEntero("Opcion: ");
                 if (optPal == 1) {
+                    string text;
+                    cout << "Ingrese texto a validar: ";
+                    getline(cin, text);
                     if (esPalindromo(text)) cout << "Es palindromo!" << endl;
                     else cout << "NO es palindromo." << endl;
                 }
@@ -222,6 +258,11 @@ int main(int argc, char* argv[]) {
                 do {
                     volver = leerEntero("[0] VOLVER: ");
                 } while (volver != 0);
+                break;
+            }
+            case 8: {
+                crearIndiceInvertidoParalelo();
+                pausar();
                 break;
             }
             case 0:

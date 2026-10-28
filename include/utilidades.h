@@ -25,4 +25,10 @@ void conteoTexto(const string& filename);
 // Verifica si un string es palíndromo
 bool esPalindromo(const string& str);
 
+// Obtiene variable desde getenv() o .env con valor por defecto opcional
+string obtenerVariableEnvOConfig(const string& nombreVariable, const string& valorDefecto = "");
+
+// Valida si una variable de entorno es un entero válido en el rango [minimo, maximo]
+bool validarVariableEntero(const string& nombreVariable, int& salida, int minimo = 1, int maximo = 1000000);
+
 #endif // UTILIDADES_H

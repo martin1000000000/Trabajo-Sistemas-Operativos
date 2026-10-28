@@ -222,10 +222,10 @@ void eliminarPerfil(ListaPerfiles& listaPerfiles, const string& archivoPerfiles)
     // Alerta si es ADMIN
     if (strcmp(p.nombre, "ADMIN") == 0) {
         cout << endl;
-        cout << "╔══════════════════════════════════════════════╗" << endl;
-        cout << "║  [ADVERTENCIA] Estas eliminando el perfil    ║" << endl;
-        cout << "║  ADMIN. Eliminarlo puede afectar el sistema. ║" << endl;
-        cout << "╚══════════════════════════════════════════════╝" << endl;
+        cout << "+----------------------------------------------+" << endl;
+        cout << "|  [ADVERTENCIA] Estas eliminando el perfil    |" << endl;
+        cout << "|  ADMIN. Eliminarlo puede afectar el sistema. |" << endl;
+        cout << "+----------------------------------------------+" << endl;
     }
 
     // Confirmar eliminación
